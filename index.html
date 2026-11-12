@@ -314,6 +314,20 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
 .passo .n{width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800}
 .passo span{font-size:15px;line-height:1.4}
 .ic-i{width:22px;height:22px;vertical-align:-5px;color:#0a7aff;margin:0 2px}
+.boasvindas{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 20px}
+.boasvindas .e{font-size:34px;line-height:1}
+.boasvindas b{color:var(--ink);font-size:17px}
+.boasvindas span{font-size:14.5px}
+.premium{position:relative;overflow:hidden;border-radius:22px;padding:18px;color:#fff;background:radial-gradient(120% 90% at 100% 0%,rgba(255,255,255,.16) 0,rgba(255,255,255,0) 55%),linear-gradient(140deg,var(--hero-a),var(--hero-b));box-shadow:0 10px 30px var(--hero-shadow);display:flex;flex-direction:column;gap:8px}
+.premium .ph{display:flex;align-items:center;gap:10px}
+.premium .ph b{font-size:19px;font-weight:800}
+.premium .selo{font-size:11px;font-weight:800;letter-spacing:.08em;background:linear-gradient(135deg,#f6d77a,#c9a24a);color:#3a2a05;border-radius:999px;padding:3px 9px}
+.premium p{margin:0;font-weight:700;opacity:.95}
+.premium ul{margin:0;padding-left:18px;font-size:14px;opacity:.92;display:flex;flex-direction:column;gap:2px}
+.premium .acts{margin-top:4px}
+.premium .btn.primary{background:#fff;color:#111;border-color:#fff;display:inline-flex;align-items:center;text-decoration:none}
+.premium .btn.ghost{color:#fff;opacity:.85}
+.premium small{font-size:12px;opacity:.75}
 .escolha{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);background:var(--surface);border-radius:20px;padding:16px;cursor:pointer;color:var(--ink);box-shadow:var(--shadow)}
 .escolha:active{transform:scale(.99)}
 .escolha .e{font-size:30px;line-height:1}
@@ -500,8 +514,9 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     <div class="card" id="cardLocal" hidden>
       <p><strong>Modo celular (offline)</strong></p>
       <p class="muted" style="font-size:14px">Tudo fica guardado neste aparelho e funciona sem internet.</p>
-      <p style="font-size:14px;font-weight:700;margin-top:4px">Quer usar online, em vários aparelhos?</p>
-      <a class="wa" id="btnPedirAcesso2" href="#" target="_blank" rel="noopener" style="min-height:46px;font-size:15px"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:22px;height:22px"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>Pedir acesso online</a>
+      <p style="font-size:14px;font-weight:700;margin-top:4px">Caderneta Online <span style="font-size:11px;font-weight:800;letter-spacing:.08em;background:linear-gradient(135deg,#f6d77a,#c9a24a);color:#3a2a05;border-radius:999px;padding:2px 8px">PREMIUM</span></p>
+      <p class="muted" style="font-size:14px">Use em qualquer aparelho, com os dados guardados na nuvem. Acesso liberado sob consulta.</p>
+      <a class="wa" id="btnPedirAcesso2" href="#" target="_blank" rel="noopener" style="min-height:46px;font-size:15px"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:22px;height:22px"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>Quero o acesso online</a>
       <button type="button" class="btn" id="btnJaTenhoAcesso">Já tenho acesso: entrar e enviar meus dados</button>
       <button type="button" class="btn danger" id="btnApagarLocal">Apagar todos os dados deste aparelho</button>
       <div class="confirm" id="apagarLocalBox" hidden>Tem certeza? Isso não pode ser desfeito. <button type="button" class="btn small danger" id="btnApagarLocalSim">Sim, apagar tudo</button><button type="button" class="btn small" id="btnApagarLocalNao">Não</button></div>
@@ -722,7 +737,11 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     if(!ready){ box.innerHTML='<div class="empty">Carregando…</div>'; return; }
     const q=norm($('#busca').value);
     let gs=grupos(tipoLista);
-    if(!gs.length){ box.innerHTML=`<div class="empty">${tipoLista==='receber'?'Ninguém te deve ainda.':'Você não tem dívidas registradas.'}<br>Toque em <strong>+</strong> para adicionar alguém${contas.length?'':', ou traga os dados de uma cópia de segurança.'}${contas.length?'':'<br><br><button type="button" class="btn primary" id="btnIrImport">Importar cópia de segurança</button>'}</div>`; const bi=box.querySelector('#btnIrImport'); if(bi) bi.addEventListener('click',()=>go('conta')); return; }
+    if(!gs.length){
+      box.innerHTML=`<div class="empty boasvindas"><span class="e">${tipoLista==='receber'?'👋':'🧾'}</span><b>${tipoLista==='receber'?'Nenhum cliente ainda':'Nenhuma dívida registrada'}</b><span>Toque em <strong>Adicionar</strong>, aqui embaixo, para cadastrar ${tipoLista==='receber'?'o primeiro cliente':'a primeira dívida'}.</span></div>`;
+      if(modoLocal && !lsGet('cc_premium_nao')) box.appendChild(cardPremium());
+      return;
+    }
     const qd=q.replace(/\D/g,'');
     if(q) gs=gs.filter(g=>norm(g.nome).includes(q) || g.contas.some(c=>norm(c.item).includes(q)) || (qd.length>=4 && String(g.tel).includes(qd)));
     if(!gs.length){ box.innerHTML='<div class="empty">Nenhum nome encontrado.</div>'; return; }
@@ -745,6 +764,23 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       });
       box.appendChild(wrap);
     });
+  }
+
+  // convite para o acesso online (plano pago), mostrado a quem usa só no celular
+  function linkPremium(){
+    const num=String(window.CONTATO_WHATSAPP||'').replace(/\D/g,'');
+    return num?('https://wa.me/'+(num.length<=11?'55'+num:num)+'?text='+encodeURIComponent('Olá! Quero assinar a Caderneta Online (acesso premium).')):'';
+  }
+  function cardPremium(){
+    const el=document.createElement('div'); el.className='premium';
+    const href=linkPremium();
+    el.innerHTML=`<div class="ph"><span class="selo">PREMIUM</span><b>Caderneta Online</b></div>
+      <p>Quer deixar suas contas online?</p>
+      <ul><li>Acesse de qualquer celular ou computador</li><li>Seus dados guardados na nuvem, com cópia automática</li><li>Troque de celular sem perder nada</li></ul>
+      <div class="acts">${href?`<a class="btn primary" href="${href}" target="_blank" rel="noopener">Quero o acesso online</a>`:''}<button type="button" class="btn ghost" data-nao="1">Agora não</button></div>
+      <small>Acesso liberado sob consulta. Você pode continuar usando grátis no celular.</small>`;
+    el.querySelector('[data-nao]').addEventListener('click',()=>{ lsSet('cc_premium_nao','1'); el.remove(); });
+    return el;
   }
 
   // ---------- pessoa ----------
@@ -1413,7 +1449,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     const txt='Olá! Uso a Caderneta de Contas e quero o acesso online.';
     const href=num?('https://wa.me/'+(num.length<=11?'55'+num:num)+'?text='+encodeURIComponent(txt)):'';
     ['#btnPedirAcesso','#btnPedirAcesso2'].forEach(sel=>{ const a=$(sel); if(!a) return;
-      if(href) a.href=href; else { a.removeAttribute('href'); a.addEventListener('click',e=>{ e.preventDefault(); toast('Peça o acesso a quem te enviou o app.'); }); } });
+      if(href) a.href = sel==='#btnPedirAcesso2' ? linkPremium() : href; else { a.removeAttribute('href'); a.addEventListener('click',e=>{ e.preventDefault(); toast('Peça o acesso a quem te enviou o app.'); }); } });
   })();
   $('#btnJaTenhoAcesso').addEventListener('click',()=>{ lsSet('cc_escolha','online'); lsSet('cc_modo',null); modoLocal=false; encerrarSessao(); $('#lock').hidden=true; mostraLogin(); syncEl.textContent='Desconectado'; syncEl.classList.remove('ok'); go('lista'); });
   // envio dos dados do modo celular para a nuvem
