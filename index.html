@@ -308,6 +308,8 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   <div class="novidades" id="novidades" hidden>
     <div class="nh"><strong>Novidades no app</strong><button type="button" class="x" id="novFechar" aria-label="Fechar">×</button></div>
     <ul>
+      <li><b>Compartilhe o app:</b> cada pessoa cria a própria conta e vê só os próprios dados (em “Conta”).</li>
+      <li><b>Sua regra de acréscimo</b> pode ser ajustada em “Conta”.</li>
       <li><b>Cores:</b> escolha abaixo ou toque no ícone de paleta no topo.</li>
       <li><b>WhatsApp</b> direto na lista de nomes.</li>
       <li><b>Pagamento parcial</b>, histórico e recibo (toque na data da parcela).</li>
@@ -397,7 +399,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
         <input id="valor" type="text" inputmode="decimal" placeholder="0,00">
       </div>
       <div class="calc">
-        <div class="mult" id="cMult">Regra: até 3x = ×1,7 · mais de 3x = ×2</div>
+        <div class="mult" id="cMult">Regra automática</div>
         <div class="two">
           <div class="field"><label for="cTotalIn">Total (R$)</label><input id="cTotalIn" type="text" inputmode="decimal" placeholder="0,00"></div>
           <div class="field"><label for="cParcIn">Cada parcela (R$)</label><input id="cParcIn" type="text" inputmode="decimal" placeholder="0,00"></div>
@@ -410,7 +412,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
         <div class="field">
           <label for="regra">Regra de acréscimo</label>
           <select id="regra">
-            <option value="auto">Automática (até 3x = ×1,7 · mais de 3x = ×2)</option>
+            <option value="auto" id="optAuto">Automática (até 3x = ×1,7 · mais de 3x = ×2)</option>
             <option value="nenhuma">Sem acréscimo (×1)</option>
             <option value="manual">Sem valor do bem (informo a parcela)</option>
           </select>
@@ -451,6 +453,21 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       <label class="btn" for="fileImport" style="display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);font-size:15px">Importar arquivo de backup</label>
       <input type="file" id="fileImport" accept=".json,application/json" hidden>
       <p class="muted" id="importMsg" style="font-size:14px"></p>
+    </div>
+    <div class="card">
+      <p><strong>Minha regra de acréscimo</strong></p>
+      <p class="muted" style="font-size:14px">Usada no cálculo automático das vendas novas. Não muda as vendas já cadastradas.</p>
+      <div class="two">
+        <div class="field"><label for="rgLimite">Até quantas parcelas</label><input id="rgLimite" type="number" inputmode="numeric" min="1" max="120"></div>
+        <div class="field"><label for="rgAte">Multiplica por</label><input id="rgAte" inputmode="decimal"></div>
+      </div>
+      <div class="field"><label for="rgAcima">Acima disso, multiplica por</label><input id="rgAcima" inputmode="decimal"></div>
+      <button type="button" class="btn primary" id="btnRegra">Salvar regra</button>
+    </div>
+    <div class="card">
+      <p><strong>Compartilhar o app</strong></p>
+      <p class="muted" style="font-size:14px">Mande o link para outras pessoas. Cada uma cria a própria conta e vê só os próprios cadastros. Ninguém vê os seus dados.</p>
+      <button type="button" class="btn primary" id="btnShareApp">Compartilhar link do app</button>
     </div>
     <div class="card">
       <p><strong>Cores do app</strong></p>
@@ -530,7 +547,10 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   const norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
   const num = v => v ? (Math.round(v*100)/100).toFixed(2).replace('.',',') : '';
 
-  function multiplicador(p, regra){ if(regra==='nenhuma'||regra==='manual') return 1; return p>3?2:1.7; }
+  let regraCfg={limite:3,ate:1.7,acima:2};
+  const nx=v=>String(v).replace('.',',');
+  const textoRegra=()=>`até ${regraCfg.limite}x = ×${nx(regraCfg.ate)} · mais de ${regraCfg.limite}x = ×${nx(regraCfg.acima)}`;
+  function multiplicador(p, regra){ if(regra==='nenhuma'||regra==='manual') return 1; return p>regraCfg.limite?regraCfg.acima:regraCfg.ate; }
   function addMonths(date,n){ const d=new Date(date.getFullYear(),date.getMonth()+n,1); const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); d.setDate(Math.min(date.getDate(),last)); return d; }
   function vencimentos(c){ const b=parseISO(c.dataPrimeiroPagamento), out=[]; for(let i=0;i<c.parcelas;i++) out.push(iso(c.frequencia==='semanal'?new Date(b.getFullYear(),b.getMonth(),b.getDate()+7*i):addMonths(b,i))); return out; }
   function parseValor(s){ s=String(s||'').trim().replace(/[R$\s]/g,''); if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); const v=parseFloat(s); return isFinite(v)?v:0; }
@@ -833,7 +853,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     const regra=$('#regra').value, manual=regra==='manual';
     $('#valorWrap').hidden=manual;
     const m=multiplicador(p,regra);
-    $('#cMult').textContent = manual ? 'Digite o valor da parcela ou o total.' : regra==='nenhuma' ? 'Sem acréscimo (×1)' : `Regra: ${p>3?'mais de 3x → ×2':'até 3x → ×1,7'}`;
+    $('#cMult').textContent = manual ? 'Digite o valor da parcela ou o total.' : regra==='nenhuma' ? 'Sem acréscimo (×1)' : `Regra: ${p>regraCfg.limite?`mais de ${regraCfg.limite}x → ×${nx(regraCfg.acima)}`:`até ${regraCfg.limite}x → ×${nx(regraCfg.ate)}`}`;
     if(manual){ $('#btnRecalc').hidden=true; $('#calcHint').textContent='Um calcula o outro.'; }
     else if(!calcManual){ const tot=parseValor($('#valor').value)*m; $('#cTotalIn').value=num(tot); $('#cParcIn').value=num(tot/p); $('#btnRecalc').hidden=true; $('#calcHint').textContent='Calculado sozinho. Pode alterar se quiser.'; }
     else { $('#cParcIn').value=num(parseValor($('#cTotalIn').value)/p); $('#btnRecalc').hidden=false; $('#calcHint').textContent='Valor alterado por você.'; }
@@ -987,12 +1007,14 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
 
   resetForm(); render();
 
-  // ---------- senha de 4 números (guardada só neste aparelho) ----------
-  const PINK='cc_pin_v1';
+  // ---------- senha de 4 números (guardada neste aparelho, separada por conta) ----------
+  function lsGetEarly(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  let uidAtual=lsGetEarly('cc_uid')||'';
+  const pinKey=()=>'cc_pin_v1:'+uidAtual, saltKey=()=>'cc_pin_salt:'+uidAtual;
   const lsGet=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } };
   const lsSet=(k,v)=>{ try{ v===null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} };
   async function hashPin(pin){
-    const salt='caderneta:'+(lsGet('cc_pin_salt')||'');
+    const salt='caderneta:'+(lsGet(saltKey())||'');
     if(window.crypto&&crypto.subtle){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(salt+pin)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
     let h=0; for(const ch of salt+pin) h=(h*31+ch.charCodeAt(0))|0; return 'x'+h;
   }
@@ -1013,34 +1035,34 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   async function teclaPin(k){
     if(k==='⌫'){ pinBuf=pinBuf.slice(0,-1); pinUI(); return; }
     if(k==='Cancelar'){ $('#lock').hidden=true; return; }
-    if(k==='Esqueci'){ $('#lockMsg').textContent='Para trocar a senha, entre de novo com sua conta.'; lsSet(PINK,null); setTimeout(()=>{ $('#lock').hidden=true; if(window.firebase&&firebase.apps&&firebase.apps.length) firebase.auth().signOut(); },1200); return; }
+    if(k==='Esqueci'){ $('#lockMsg').textContent='Para trocar a senha, entre de novo com sua conta.'; lsSet(pinKey(),null); setTimeout(()=>{ $('#lock').hidden=true; if(window.firebase&&firebase.apps&&firebase.apps.length) firebase.auth().signOut(); },1200); return; }
     if(pinBuf.length>=4) return;
     pinBuf+=k; pinUI();
     if(pinBuf.length<4) return;
-    const v=pinBuf; await new Promise(r=>setTimeout(r,120));
+    const v=pinBuf; pinBuf=''; setTimeout(pinUI,150);
     if(pinModo==='criar'){ pinPrimeiro=v; pinModo='confirmar'; pinBuf=''; $('#lockTit').textContent='Repita a senha'; pinUI(); return; }
     if(pinModo==='confirmar'){
       if(v!==pinPrimeiro){ erroPin('As senhas não são iguais. Tente de novo.'); pinModo='criar'; $('#lockTit').textContent='Crie uma senha de 4 números'; return; }
-      lsSet('cc_pin_salt',String(Math.random()).slice(2)); lsSet(PINK,await hashPin(v)); $('#lock').hidden=true; toast('Senha criada'); atualizaPinInfo(); return;
+      lsSet(saltKey(),String(Math.random()).slice(2)); lsSet(pinKey(),await hashPin(v)); $('#lock').hidden=true; toast('Senha criada'); atualizaPinInfo(); return;
     }
-    if(await hashPin(v)===lsGet(PINK)){ $('#lock').hidden=true; ultimoUso=Date.now(); return; }
+    if(await hashPin(v)===lsGet(pinKey())){ $('#lock').hidden=true; ultimoUso=Date.now(); return; }
     erroPin('Senha errada.');
   }
   function erroPin(msg){ const d=$('#lockDots'); d.classList.remove('err'); void d.offsetWidth; d.classList.add('err'); $('#lockMsg').textContent=msg; pinBuf=''; pinUI(); if(navigator.vibrate) navigator.vibrate(80); }
   function atualizaPinInfo(){
-    const tem=!!lsGet(PINK);
+    const tem=!!lsGet(pinKey());
     $('#pinInfo').textContent = tem ? 'Ativada neste aparelho. O app pede a senha ao abrir e depois de 3 minutos fora.' : 'Peça uma senha de 4 números para abrir o app neste aparelho.';
     $('#btnPin').textContent = tem ? 'Trocar senha' : 'Criar senha'; $('#btnPinOff').hidden=!tem;
   }
   $('#btnPin').addEventListener('click',()=>abrirPin('criar'));
-  $('#btnPinOff').addEventListener('click',()=>{ lsSet(PINK,null); atualizaPinInfo(); toast('Senha removida'); });
+  $('#btnPinOff').addEventListener('click',()=>{ lsSet(pinKey(),null); atualizaPinInfo(); toast('Senha removida'); });
   let ultimoUso=Date.now();
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){ ultimoUso=Date.now(); return; }
-    if(lsGet(PINK) && Date.now()-ultimoUso>3*60*1000 && $('#login').hidden) abrirPin('entrar');
+    if(lsGet(pinKey()) && Date.now()-ultimoUso>3*60*1000 && $('#login').hidden) abrirPin('entrar');
   });
   atualizaPinInfo();
-  if(lsGet(PINK)) abrirPin('entrar');
+  if(lsGet(pinKey())) abrirPin('entrar');
 
   // ---------- cores do app ----------
   const TEMAS=[["verde", "Verde", "#0f7a56", "#083726", "#3fcf94"], ["grafite", "Grafite e azul", "#3a3a3c", "#0b0b0c", "#0a7aff"], ["dourado", "Preto e dourado", "#2e2922", "#0d0b08", "#e0b84f"], ["roxo", "Roxo", "#6d5dfc", "#3b2bb8", "#a78bfa"], ["marinho", "Azul-marinho", "#173f75", "#081a33", "#38bdf8"]];
@@ -1050,7 +1072,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     lsSet('cc_tema',t);
     const m=document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content',(TEMAS.find(x=>x[0]===t)||TEMAS[0])[2]);
     document.querySelectorAll('.temas .tema').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
-    if(salvar && db){ salva(db.doc('config/prefs').set({tema:t,atualizadoEm:new Date().toISOString()})); }
+    if(salvar && db){ salva(db.doc('config/prefs').set({tema:t,atualizadoEm:new Date().toISOString()},{merge:true})); }
   }
   (function(){
     document.querySelectorAll('.temas').forEach(box=>{
@@ -1063,10 +1085,31 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     $('#coresFechar').addEventListener('click',()=>{ $('#sheetCores').hidden=true; });
     $('#sheetCores').addEventListener('click',e=>{ if(e.target.id==='sheetCores') $('#sheetCores').hidden=true; });
     // aviso de novidades: aparece uma vez a cada versão nova
-    const VERSAO='2026-11-12a';
+    const VERSAO='2026-11-12b';
     if(lsGet('cc_novidades')!==VERSAO) $('#novidades').hidden=false;
     $('#novFechar').addEventListener('click',()=>{ $('#novidades').hidden=true; lsSet('cc_novidades',VERSAO); });
   })();
+
+  // ---------- regra de acréscimo e compartilhar ----------
+  function mostraRegra(){
+    $('#rgLimite').value=regraCfg.limite; $('#rgAte').value=nx(regraCfg.ate); $('#rgAcima').value=nx(regraCfg.acima);
+    $('#optAuto').textContent='Automática ('+textoRegra()+')';
+    if(view==='nova') atualizarCalc();
+  }
+  $('#btnRegra').addEventListener('click',()=>{
+    const limite=parseInt($('#rgLimite').value), ate=parseValor($('#rgAte').value), acima=parseValor($('#rgAcima').value);
+    if(!(limite>=1)||!(ate>0)||!(acima>0)){ toast('Confira os números da regra.'); return; }
+    regraCfg={limite,ate,acima}; mostraRegra();
+    if(db) salva(db.doc('config/prefs').set({regra:regraCfg,atualizadoEm:new Date().toISOString()},{merge:true}));
+    toast('Regra salva: '+textoRegra());
+  });
+  $('#btnShareApp').addEventListener('click',async()=>{
+    const url='https://cleissonfm.github.io/minhas-contas/';
+    const text='Use a Caderneta de Contas para controlar quem te deve e o que você deve. É grátis: entre com sua conta Google e crie seus próprios cadastros.';
+    if(navigator.share){ try{ await navigator.share({title:'Caderneta de Contas',text,url}); return; }catch(e){ if(e&&e.name==='AbortError') return; } }
+    try{ await navigator.clipboard.writeText(text+' '+url); toast('Link copiado'); }catch(e){ window.open('https://wa.me/?text='+encodeURIComponent(text+' '+url),'_blank'); }
+  });
+  mostraRegra();
 
   // ---------- Firebase ----------
   const syncEl=$('#sync');
@@ -1114,16 +1157,30 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       if(!em){ mostraErro('Digite seu e-mail acima e toque de novo em “Esqueci a senha”.'); return; }
       try{ await auth.sendPasswordResetEmail(em); mostraErro(''); toast('Enviamos um e-mail para trocar a senha.'); }catch(err){ mostraErro(erroPt(err)); }
     });
-    $('#btnSair').addEventListener('click',()=>auth.signOut());
+    $('#btnSair').addEventListener('click',async()=>{
+      // sai e apaga deste aparelho a cópia local dos dados desta conta
+      try{ await auth.signOut(); }catch(e){}
+      aplicaTema('verde',false); regraCfg={limite:3,ate:1.7,acima:2}; mostraRegra();
+      try{ await fs.terminate(); await fs.clearPersistence(); }catch(e){}
+      location.reload();
+    });
     let unsub=null, unsubPrefs=null;
     auth.onAuthStateChanged(u=>{
       if(unsub){ unsub(); unsub=null; }
       contas=[]; ready=false;
-      if(!u){ db=null; $('#login').hidden=false; syncEl.textContent='Desconectado'; syncEl.classList.remove('ok'); render(); return; }
+      if(!u){ db=null; $('#lock').hidden=true; $('#login').hidden=false; syncEl.textContent='Desconectado'; syncEl.classList.remove('ok'); render(); return; }
       $('#login').hidden=true; $('#contaEmail').textContent=u.email||u.displayName||'—';
+      if(u.uid!==uidAtual){
+        uidAtual=u.uid; lsSet('cc_uid',u.uid);
+        const velho=lsGet('cc_pin_v1'); if(velho && !lsGet(pinKey())){ lsSet(pinKey(),velho); lsSet(saltKey(),lsGet('cc_pin_salt')||''); }
+        lsSet('cc_pin_v1',null); lsSet('cc_pin_salt',null);
+        $('#lock').hidden=true;
+        if(lsGet(pinKey())) abrirPin('entrar');
+      }
+      atualizaPinInfo();
       const base='users/'+u.uid+'/';
       db={ collection:p=>fs.collection(base+p), doc:p=>fs.doc(base+p) };
-      try{ if(unsubPrefs) unsubPrefs(); unsubPrefs=fs.doc(base+'config/prefs').onSnapshot(d=>{ const t=d.exists&&d.data().tema; if(t && t!==lsGet('cc_tema')) aplicaTema(t,false); },()=>{}); }catch(e){}
+      try{ if(unsubPrefs) unsubPrefs(); unsubPrefs=fs.doc(base+'config/prefs').onSnapshot(d=>{ const dd=(d.exists&&d.data())||{}; const t=dd.tema||'verde'; if(t!==lsGet('cc_tema')) aplicaTema(t,false); regraCfg=Object.assign({limite:3,ate:1.7,acima:2},dd.regra||{}); mostraRegra(); },()=>{}); }catch(e){}
       const timer=setTimeout(()=>{ if(!ready){ syncEl.textContent='Sem conexão…'; } },10000);
       syncEl.textContent='Carregando…';
       unsub=fs.collection(base+'contas').onSnapshot({includeMetadataChanges:true},snap=>{

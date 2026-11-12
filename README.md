@@ -13,6 +13,7 @@ App pessoal para controlar quem me deve e o que eu devo.
 - Tela **Meses**: quanto recebo em cada mês, quem paga em cada mês, quanto já recebi, e resumo para enviar.
 - **Minha conta**: cópia de segurança, importar backup, planilha (Excel), lembretes no calendário e senha de 4 números.
 - Funciona sem internet e sincroniza depois.
+- **Várias pessoas podem usar o mesmo link**: cada uma entra com a própria conta e só vê os próprios dados. Regra de acréscimo, cores e senha são de cada conta.
 
 ## Como está montado
 - Página única (`index.html`) publicada pelo GitHub Pages.
