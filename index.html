@@ -143,6 +143,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none}
 .pr.late .cal{background:var(--out);color:#fff}
 .pr.late .cal small{color:rgba(255,255,255,.85)}
 .pr.paid{opacity:.6}
+.pr.hoje .cal{background:var(--accent);color:#fff}
+.pr.hoje .cal small{color:rgba(255,255,255,.85)}
 .pr .info{border:0;background:transparent;text-align:left;cursor:pointer;padding:2px 0;min-width:0}
 .pr .info .d{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;display:block}
 .pr .info small{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
@@ -197,6 +199,9 @@ nav.bar button svg{width:23px;height:23px}
 nav.bar button[aria-current="true"]{color:var(--accent)}
 nav.bar button.add{width:60px;height:60px;margin:-26px auto 0;border-radius:20px;background:linear-gradient(140deg,var(--hero-a),var(--hero-b));color:#fff;box-shadow:0 8px 20px rgba(8,55,38,.35);justify-content:center}
 nav.bar button.add svg{width:28px;height:28px}
+.toast{display:flex;align-items:center;gap:14px;}
+.toast button{border:0;background:transparent;color:var(--accent);font-weight:800;font-size:14px;cursor:pointer;padding:4px 0;white-space:nowrap}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .toast button{color:#0e6b4c}}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:700;font-size:14px;z-index:20;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
 @media (max-width:370px){.two,.facts{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -419,7 +424,13 @@ nav.bar button.add svg{width:28px;height:28px}
   const verTodas=new Set();
   try{ const t=localStorage.getItem('cc_tipo'); if(t==='pagar') tipoLista='pagar'; }catch(e){}
 
-  function toast(msg){ const el=$('#toast'); el.textContent=msg; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,2600); }
+  function toast(msg,acao,fn){
+    const el=$('#toast'); el.innerHTML=''; const sp=document.createElement('span'); sp.textContent=msg; el.appendChild(sp);
+    if(acao&&fn){ const b=document.createElement('button'); b.type='button'; b.textContent=acao; b.addEventListener('click',()=>{ el.hidden=true; fn(); }); el.appendChild(b); }
+    el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true, acao?5000:2600);
+  }
+  // grava sem travar a tela quando estiver sem internet (o Firestore guarda e envia depois)
+  function salva(p){ p.catch(e=>toast('Não foi possível salvar ('+((e&&e.code)||'erro')+'). Verifique a internet.')); return Promise.race([p,new Promise(r=>setTimeout(r,1200))]); }
 
   // ---------- grupos por pessoa ----------
   function grupos(tipo){
@@ -550,8 +561,8 @@ nav.bar button.add svg{width:28px;height:28px}
       const d=inp.value.replace(/\D/g,'');
       if(d && d.length<10){ toast('Número incompleto. Coloque o DDD e o número.'); inp.focus(); return; }
       e.currentTarget.disabled=true;
-      try{ for(const c of g.contas){ await db.doc('contas/'+c.id).update({telefone:d, atualizadoEm:new Date().toISOString()}); } editTel=false; toast(d?'Número salvo':'Número removido'); }
-      catch(err){ toast('Não foi possível salvar o número.'); e.currentTarget.disabled=false; }
+      for(const c of g.contas){ await salva(db.doc('contas/'+c.id).update({telefone:d, atualizadoEm:new Date().toISOString()})); }
+      editTel=false; toast(d?'Número salvo':'Número removido'); render();
     });
   }
   function itemCard(c){
@@ -578,12 +589,12 @@ nav.bar button.add svg{width:28px;height:28px}
     mostrar.forEach(i=>{
       const d=a.datas[i], paid=!!(c.pagas||[])[i], late=!paid&&d<t;
       const edited=(c.valores&&typeof c.valores[i]==='number')||(c.datasCustom&&c.datasCustom[i]);
-      const r=document.createElement('div'); r.className='pr'+(paid?' paid':'')+(late?' late':'');
+      const r=document.createElement('div'); r.className='pr'+(paid?' paid':'')+(late?' late':'')+(!paid&&d===t?' hoje':'');
       const MS=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
       const dd=parseISO(d);
-      r.innerHTML=`<span class="cal"><b>${pad(dd.getDate())}</b><small>${MS[dd.getMonth()]}</small></span><button type="button" class="info"><span class="d">${fmt(a.valores[i])}</span><small>${i+1}ª parcela${late?' · atrasada':''}${paid?' · paga':''}${edited?' · alterada':''}</small></button>
+      r.innerHTML=`<span class="cal"><b>${pad(dd.getDate())}</b><small>${MS[dd.getMonth()]}</small></span><button type="button" class="info"><span class="d">${fmt(a.valores[i])}</span><small>${i+1}ª parcela${late?' · atrasada':''}${paid?(c.pagoEm&&c.pagoEm[i]?' · paga em '+dm(c.pagoEm[i]):' · paga'):''}${!paid&&d===t?' · vence hoje':''}${edited?' · alterada':''}</small></button>
         <button type="button" class="btn small pay${paid?' on':''}">${paid?'✓ Pago':(c.tipo==='receber'?'Recebi':'Paguei')}</button>`;
-      r.querySelector('.pay').addEventListener('click',e=>{ e.currentTarget.disabled=true; salvarParcela(c,i,{valor:a.valores[i],data:d,paga:!paid}, paid?'Desmarcado':'Marcado como pago'); });
+      r.querySelector('.pay').addEventListener('click',e=>{ e.currentTarget.disabled=true; salvarParcela(c,i,{valor:a.valores[i],data:d,paga:!paid}, paid?'Parcela desmarcada':(c.tipo==='receber'?`Recebido: ${fmt(a.valores[i])} de ${c.nome.split(' ')[0]}`:`Pago: ${fmt(a.valores[i])}`), true); });
       r.querySelector('.info').addEventListener('click',()=>{ selParc=(selParc&&selParc.id===c.id&&selParc.i===i)?null:{id:c.id,i}; render(); });
       if(selParc&&selParc.id===c.id&&selParc.i===i){
         const ed=document.createElement('div'); ed.className='pedit';
@@ -625,19 +636,25 @@ nav.bar button.add svg{width:28px;height:28px}
     go('nova'); $('#item').focus();
   });
 
-  async function salvarParcela(c,i,{valor,data,paga},msg){
+  async function salvarParcela(c,i,{valor,data,paga},msg,desfazer){
     const n=c.parcelas, fill=(arr,f)=>{ const a=(arr||[]).slice(0,n); while(a.length<n) a.push(f); return a; };
     const a=analisar(c);
-    const valores=fill(c.valores,null), datasCustom=fill(c.datasCustom,null), pagas=fill(c.pagas,false);
+    const valores=fill(c.valores,null), datasCustom=fill(c.datasCustom,null), pagas=fill(c.pagas,false), pagoEm=fill(c.pagoEm,null);
+    const antes={valores:valores.slice(),datasCustom:datasCustom.slice(),pagas:pagas.slice(),pagoEm:pagoEm.slice()};
     valores[i] = (valor===null || Math.abs(valor-a.valorParc)<0.005) ? null : valor;
     datasCustom[i] = (!data || data===a.auto[i]) ? null : data;
+    if(paga && !pagas[i]) pagoEm[i]=today();
+    if(!paga) pagoEm[i]=null;
     pagas[i]=paga;
-    try{ await db.doc('contas/'+c.id).update({valores,datasCustom,pagas,atualizadoEm:new Date().toISOString()}); selParc=null; toast(msg); }
-    catch(e){ toast('Não foi possível salvar. Verifique a internet.'); render(); }
+    selParc=null;
+    await salva(db.doc('contas/'+c.id).update({valores,datasCustom,pagas,pagoEm,atualizadoEm:new Date().toISOString()}));
+    if(desfazer) toast(msg,'Desfazer',()=>salva(db.doc('contas/'+c.id).update({...antes,atualizadoEm:new Date().toISOString()})).then(()=>toast('Desfeito')));
+    else toast(msg);
   }
   async function apagar(c){
-    try{ await db.doc('contas/'+c.id).delete(); toast('Apagado'); }
-    catch(e){ toast('Não foi possível apagar.'); }
+    const {id,...copia}=c;
+    await salva(db.doc('contas/'+id).delete());
+    toast('Compra apagada','Desfazer',()=>salva(db.doc('contas/'+id).set(copia)).then(()=>toast('Restaurada')));
   }
 
   // ---------- formulário ----------
@@ -707,8 +724,11 @@ nav.bar button.add svg{width:28px;height:28px}
     };
     $('#btnSalvar').disabled=true;
     try{
-      if(editId) await db.doc('contas/'+editId).set(doc); else await db.collection('contas').add(doc);
-      if(doc.telefone){ const k=doc.tipo+'|'+norm(doc.nome); for(const c of contas){ if(c.id!==editId && c.tipo+'|'+norm(c.nome)===k && c.telefone!==doc.telefone){ try{ await db.doc('contas/'+c.id).update({telefone:doc.telefone}); }catch(e){} } } }
+      if(antigo && antigo.pagoEm) doc.pagoEm=corta(antigo.pagoEm,null);
+      if(antigo && antigo.historico) doc.historico=antigo.historico;
+      const ref = editId ? db.doc('contas/'+editId) : db.collection('contas').doc();
+      await salva(ref.set(doc));
+      if(doc.telefone){ const k=doc.tipo+'|'+norm(doc.nome); for(const c of contas){ if(c.id!==editId && c.tipo+'|'+norm(c.nome)===k && c.telefone!==doc.telefone){ salva(db.doc('contas/'+c.id).update({telefone:doc.telefone})); } } }
       toast(editId?'Alterações salvas':'Pessoa adicionada');
       pessoaKey=doc.tipo+'|'+norm(doc.nome); setTipo(doc.tipo); resetForm(); go('pessoa');
     }catch(err){ toast(err&&err.code==='quota_exceeded'?'Limite de armazenamento atingido.':'Não foi possível salvar. Verifique a internet.'); }
@@ -747,6 +767,8 @@ nav.bar button.add svg{width:28px;height:28px}
   // ---------- Firebase ----------
   const syncEl=$('#sync');
   syncEl.addEventListener('click',()=>go('conta'));
+  window.addEventListener('offline',()=>{ syncEl.textContent='Sem internet'; syncEl.classList.remove('ok'); });
+  window.addEventListener('online',()=>{ syncEl.textContent='Sincronizando…'; });
   function erroPt(e){
     const c=(e&&e.code)||'';
     const m={'auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Não existe conta com esse e-mail. Toque em “Criar conta”.',
@@ -802,7 +824,7 @@ nav.bar button.add svg{width:28px;height:28px}
       unsub=fs.collection(base+'contas').onSnapshot({includeMetadataChanges:true},snap=>{
         contas=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.parcelas>0 && c.dataPrimeiroPagamento);
         if(!snap.metadata.fromCache){ ready=true; clearTimeout(timer); syncEl.textContent='Sincronizado · Conta'; syncEl.classList.add('ok'); }
-        else { ready=true; syncEl.textContent='Offline'; syncEl.classList.remove('ok'); }
+        else { ready=true; if(!navigator.onLine){ syncEl.textContent='Sem internet'; syncEl.classList.remove('ok'); } }
         render();
       }, err=>{ clearTimeout(timer); ready=true; syncEl.textContent='Erro de acesso'; toast('Não foi possível ler os dados: '+(err.code||'')); render(); });
     });
@@ -829,6 +851,9 @@ nav.bar button.add svg{width:28px;height:28px}
     });
   }
 })();
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol==='https:'){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>
 </html>
