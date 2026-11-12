@@ -438,8 +438,8 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
         <input id="tel" type="tel" inputmode="tel" maxlength="20" placeholder="Ex.: (11) 98765-4321" autocomplete="off">
       </div>
       <div class="field">
-        <label for="item">O que foi vendido</label>
-        <input id="item" maxlength="120" placeholder="Ex.: iPhone 15 Pro Max">
+        <label for="item">Descrição (opcional)</label>
+        <input id="item" maxlength="120" placeholder="Ex.: iPhone 15, empréstimo…">
       </div>
       <div class="two">
         <div class="field">
@@ -465,7 +465,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
         </div>
       </div>
       <div class="field" id="valorWrap">
-        <label for="valor">Valor do item (R$)</label>
+        <label for="valor">Valor disponibilizado (R$)</label>
         <input id="valor" type="text" inputmode="decimal" placeholder="Ex.: 1.000,00">
       </div>
       <div class="calc">
@@ -1073,9 +1073,9 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     else { $('#cParcIn').value=num(parseValor($('#cTotalIn').value)/p); }
     const tot=parseValor($('#cTotalIn').value);
     let txt='';
-    if(v>0 && tot>0){ const f=tot/v, pct=Math.round((f-1)*1000)/10; txt=`Item ${fmt(v)} → total ${fmt(tot)}${Math.abs(f-1)>0.0005?` (${pct>0?'+':''}${String(pct).replace('.',',')}% · ×${nx(Math.round(f*100)/100)})`:' (sem acréscimo)'}<br><b>${p}x de ${fmt(tot/p)}</b>`; }
+    if(v>0 && tot>0){ const f=tot/v, pct=Math.round((f-1)*1000)/10; txt=`Valor disponibilizado ${fmt(v)} → total ${fmt(tot)}${Math.abs(f-1)>0.0005?` (${pct>0?'+':''}${String(pct).replace('.',',')}% · ×${nx(Math.round(f*100)/100)})`:' (sem acréscimo)'}<br><b>${p}x de ${fmt(tot/p)}</b>`; }
     else if(tot>0) txt=`<b>${p}x de ${fmt(tot/p)}</b> = total ${fmt(tot)}`;
-    else txt='Informe o valor do item, ou digite direto o valor de cada parcela.';
+    else txt='Informe o valor disponibilizado, ou digite direto o valor de cada parcela.';
     $('#cMult').innerHTML=txt;
     $('#calcHint').textContent = calcManual ? 'Valor digitado por você.' : 'Calculado sozinho. Se preferir, digite direto o valor de cada parcela.';
     $('#btnRecalc').hidden = !(calcManual && v>0);
@@ -1131,7 +1131,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     const mult = vItem>0 ? Math.round(valorTotal/vItem*10000)/10000 : 1;
     const acrescimo = { tipo:form.acTipo.value, valor: form.acTipo.value==='0' ? 0 : parseValor($('#acValor').value) };
     if(!$('#nome').value.trim()){ toast('Informe o nome.'); $('#nome').focus(); return; }
-    if(valorTotal<=0){ toast('Informe o valor do item ou o valor de cada parcela.'); $('#valor').focus(); return; }
+    if(valorTotal<=0){ toast('Informe o valor disponibilizado ou o valor de cada parcela.'); $('#valor').focus(); return; }
     const valorParcela=valorTotal/parcelas;
     const valorBem = vItem>0 ? vItem : valorTotal;
     const antigo = editId ? contas.find(c=>c.id===editId) : null;
