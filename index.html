@@ -456,13 +456,15 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     </div>
     <div class="card">
       <p><strong>Minha regra de acréscimo</strong></p>
-      <p class="muted" style="font-size:14px">Usada no cálculo automático das vendas novas. Não muda as vendas já cadastradas.</p>
+      <p class="muted" style="font-size:14px">Cada pessoa faz a própria cotação. A regra é usada no cálculo automático das vendas novas e não muda as já cadastradas.</p>
+      <p style="font-size:14px;font-weight:600" id="rgInfo"></p>
       <div class="two">
-        <div class="field"><label for="rgLimite">Até quantas parcelas</label><input id="rgLimite" type="number" inputmode="numeric" min="1" max="120"></div>
-        <div class="field"><label for="rgAte">Multiplica por</label><input id="rgAte" inputmode="decimal"></div>
+        <div class="field"><label for="rgLimite">Até quantas parcelas</label><input id="rgLimite" type="number" inputmode="numeric" min="1" max="120" placeholder="Ex.: 3"></div>
+        <div class="field"><label for="rgAte">Multiplica por</label><input id="rgAte" inputmode="decimal" placeholder="Ex.: 1,7"></div>
       </div>
-      <div class="field"><label for="rgAcima">Acima disso, multiplica por</label><input id="rgAcima" inputmode="decimal"></div>
+      <div class="field"><label for="rgAcima">Acima disso, multiplica por</label><input id="rgAcima" inputmode="decimal" placeholder="Ex.: 2"></div>
       <button type="button" class="btn primary" id="btnRegra">Salvar regra</button>
+      <button type="button" class="btn danger" id="btnRegraOff" hidden>Ficar sem regra</button>
     </div>
     <div class="card">
       <p><strong>Compartilhar o app</strong></p>
@@ -547,10 +549,10 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   const norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
   const num = v => v ? (Math.round(v*100)/100).toFixed(2).replace('.',',') : '';
 
-  let regraCfg={limite:3,ate:1.7,acima:2};
+  let regraCfg=null; // cada conta define a própria regra; sem regra = sem acréscimo
   const nx=v=>String(v).replace('.',',');
-  const textoRegra=()=>`até ${regraCfg.limite}x = ×${nx(regraCfg.ate)} · mais de ${regraCfg.limite}x = ×${nx(regraCfg.acima)}`;
-  function multiplicador(p, regra){ if(regra==='nenhuma'||regra==='manual') return 1; return p>regraCfg.limite?regraCfg.acima:regraCfg.ate; }
+  const textoRegra=()=>regraCfg?`até ${regraCfg.limite}x = ×${nx(regraCfg.ate)} · mais de ${regraCfg.limite}x = ×${nx(regraCfg.acima)}`:'nenhuma regra definida';
+  function multiplicador(p, regra){ if(regra==='nenhuma'||regra==='manual'||!regraCfg) return 1; return p>regraCfg.limite?regraCfg.acima:regraCfg.ate; }
   function addMonths(date,n){ const d=new Date(date.getFullYear(),date.getMonth()+n,1); const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); d.setDate(Math.min(date.getDate(),last)); return d; }
   function vencimentos(c){ const b=parseISO(c.dataPrimeiroPagamento), out=[]; for(let i=0;i<c.parcelas;i++) out.push(iso(c.frequencia==='semanal'?new Date(b.getFullYear(),b.getMonth(),b.getDate()+7*i):addMonths(b,i))); return out; }
   function parseValor(s){ s=String(s||'').trim().replace(/[R$\s]/g,''); if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); const v=parseFloat(s); return isFinite(v)?v:0; }
@@ -853,7 +855,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     const regra=$('#regra').value, manual=regra==='manual';
     $('#valorWrap').hidden=manual;
     const m=multiplicador(p,regra);
-    $('#cMult').textContent = manual ? 'Digite o valor da parcela ou o total.' : regra==='nenhuma' ? 'Sem acréscimo (×1)' : `Regra: ${p>regraCfg.limite?`mais de ${regraCfg.limite}x → ×${nx(regraCfg.acima)}`:`até ${regraCfg.limite}x → ×${nx(regraCfg.ate)}`}`;
+    $('#cMult').textContent = manual ? 'Digite o valor da parcela ou o total.' : (regra==='nenhuma'||!regraCfg) ? (regraCfg?'Sem acréscimo (×1)':'Sem acréscimo. Para calcular sozinho, defina sua regra em “Conta”.') : `Regra: ${p>regraCfg.limite?`mais de ${regraCfg.limite}x → ×${nx(regraCfg.acima)}`:`até ${regraCfg.limite}x → ×${nx(regraCfg.ate)}`}`;
     if(manual){ $('#btnRecalc').hidden=true; $('#calcHint').textContent='Um calcula o outro.'; }
     else if(!calcManual){ const tot=parseValor($('#valor').value)*m; $('#cTotalIn').value=num(tot); $('#cParcIn').value=num(tot/p); $('#btnRecalc').hidden=true; $('#calcHint').textContent='Calculado sozinho. Pode alterar se quiser.'; }
     else { $('#cParcIn').value=num(parseValor($('#cTotalIn').value)/p); $('#btnRecalc').hidden=false; $('#calcHint').textContent='Valor alterado por você.'; }
@@ -862,7 +864,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   let primAuto=true;
   function sugerePrim(){ if(!primAuto) return; const base=parseISO($('#dataNeg').value||today()); const semanal=form.freq.value==='semanal'; $('#dataPrim').value=iso(semanal?new Date(base.getFullYear(),base.getMonth(),base.getDate()+7):addMonths(base,1)); }
   form.addEventListener('change',e=>{ if(e.target.name==='freq'||e.target.id==='dataNeg') sugerePrim(); if(e.target.id==='dataPrim') primAuto=false; });
-  function onTipoChange(){ $('#regra').value = tipoAtual()==='pagar' ? 'nenhuma' : 'auto'; calcManual=false; atualizarCalc(); }
+  function onTipoChange(){ $('#regra').value = (tipoAtual()==='pagar'||!regraCfg) ? 'nenhuma' : 'auto'; calcManual=false; atualizarCalc(); }
   form.addEventListener('input',e=>{
     const id=e.target.id, p=Math.max(1,parseInt($('#parcelas').value)||1);
     if(e.target.name==='tipo') return onTipoChange();
@@ -877,7 +879,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     editId=null; form.reset(); $('#mais').open=false;
     $('#dataNeg').value=today(); primAuto=true; sugerePrim();
     $('#formTitle').textContent='Adicionar pessoa'; $('#btnSalvar').textContent='Salvar'; $('#btnCancelar').hidden=true;
-    $('#regra').value='auto'; calcManual=false; atualizarCalc();
+    $('#regra').value=regraCfg?'auto':'nenhuma'; calcManual=false; atualizarCalc();
     const dl=$('#nomesList'); dl.innerHTML=''; [...new Set(contas.map(c=>c.nome))].sort().forEach(n=>{ const o=document.createElement('option'); o.value=n; dl.appendChild(o); });
   }
   $('#btnCancelar').addEventListener('click',()=>{ resetForm(); go(pessoaKey?'pessoa':'lista'); });
@@ -1092,8 +1094,11 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
 
   // ---------- regra de acréscimo e compartilhar ----------
   function mostraRegra(){
-    $('#rgLimite').value=regraCfg.limite; $('#rgAte').value=nx(regraCfg.ate); $('#rgAcima').value=nx(regraCfg.acima);
-    $('#optAuto').textContent='Automática ('+textoRegra()+')';
+    $('#rgLimite').value=regraCfg?regraCfg.limite:''; $('#rgAte').value=regraCfg?nx(regraCfg.ate):''; $('#rgAcima').value=regraCfg?nx(regraCfg.acima):'';
+    $('#rgInfo').textContent = regraCfg ? 'Sua regra atual: '+textoRegra()+'.' : 'Você ainda não tem regra. Sem regra, o app não acrescenta nada: você digita o total ou o valor da parcela.';
+    $('#btnRegraOff').hidden=!regraCfg; $('#optAuto').disabled=!regraCfg;
+    $('#optAuto').textContent=regraCfg?'Automática ('+textoRegra()+')':'Automática (defina sua regra em “Conta”)';
+    if(!regraCfg && $('#regra').value==='auto') $('#regra').value='nenhuma';
     if(view==='nova') atualizarCalc();
   }
   $('#btnRegra').addEventListener('click',()=>{
@@ -1109,6 +1114,21 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     if(navigator.share){ try{ await navigator.share({title:'Caderneta de Contas',text,url}); return; }catch(e){ if(e&&e.name==='AbortError') return; } }
     try{ await navigator.clipboard.writeText(text+' '+url); toast('Link copiado'); }catch(e){ window.open('https://wa.me/?text='+encodeURIComponent(text+' '+url),'_blank'); }
   });
+  $('#btnRegraOff').addEventListener('click',()=>{
+    regraCfg=null; mostraRegra();
+    if(db) salva(db.doc('config/prefs').set({regra:null,atualizadoEm:new Date().toISOString()},{merge:true}));
+    toast('Agora sem regra de acréscimo');
+  });
+  // Contas criadas antes desta versão usavam a regra ×1,7 / ×2: guarda essa regra na própria conta, uma vez só.
+  let prefsDados=null, contasServidor=false;
+  function migraRegraAntiga(){
+    if(!db || !prefsDados || !contasServidor) return;
+    if('regra' in prefsDados) return;
+    const antigas=contas.some(c=>String(c.criadoEm||'')<'2026-11-12T12:00:00Z');
+    if(!antigas) return;
+    regraCfg={limite:3,ate:1.7,acima:2}; prefsDados.regra=regraCfg; mostraRegra();
+    salva(db.doc('config/prefs').set({regra:regraCfg,atualizadoEm:new Date().toISOString()},{merge:true}));
+  }
   mostraRegra();
 
   // ---------- Firebase ----------
@@ -1160,14 +1180,14 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     $('#btnSair').addEventListener('click',async()=>{
       // sai e apaga deste aparelho a cópia local dos dados desta conta
       try{ await auth.signOut(); }catch(e){}
-      aplicaTema('verde',false); regraCfg={limite:3,ate:1.7,acima:2}; mostraRegra();
+      aplicaTema('verde',false); regraCfg=null; mostraRegra();
       try{ await fs.terminate(); await fs.clearPersistence(); }catch(e){}
       location.reload();
     });
     let unsub=null, unsubPrefs=null;
     auth.onAuthStateChanged(u=>{
       if(unsub){ unsub(); unsub=null; }
-      contas=[]; ready=false;
+      contas=[]; ready=false; prefsDados=null; contasServidor=false; regraCfg=null;
       if(!u){ db=null; $('#lock').hidden=true; $('#login').hidden=false; syncEl.textContent='Desconectado'; syncEl.classList.remove('ok'); render(); return; }
       $('#login').hidden=true; $('#contaEmail').textContent=u.email||u.displayName||'—';
       if(u.uid!==uidAtual){
@@ -1180,12 +1200,12 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       atualizaPinInfo();
       const base='users/'+u.uid+'/';
       db={ collection:p=>fs.collection(base+p), doc:p=>fs.doc(base+p) };
-      try{ if(unsubPrefs) unsubPrefs(); unsubPrefs=fs.doc(base+'config/prefs').onSnapshot(d=>{ const dd=(d.exists&&d.data())||{}; const t=dd.tema||'verde'; if(t!==lsGet('cc_tema')) aplicaTema(t,false); regraCfg=Object.assign({limite:3,ate:1.7,acima:2},dd.regra||{}); mostraRegra(); },()=>{}); }catch(e){}
+      try{ if(unsubPrefs) unsubPrefs(); unsubPrefs=fs.doc(base+'config/prefs').onSnapshot(d=>{ const dd=(d.exists&&d.data())||{}; const t=dd.tema||'verde'; if(t!==lsGet('cc_tema')) aplicaTema(t,false); regraCfg=dd.regra&&dd.regra.limite?dd.regra:null; prefsDados=dd; mostraRegra(); migraRegraAntiga(); },()=>{}); }catch(e){}
       const timer=setTimeout(()=>{ if(!ready){ syncEl.textContent='Sem conexão…'; } },10000);
       syncEl.textContent='Carregando…';
       unsub=fs.collection(base+'contas').onSnapshot({includeMetadataChanges:true},snap=>{
         contas=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.parcelas>0 && c.dataPrimeiroPagamento);
-        if(!snap.metadata.fromCache){ ready=true; clearTimeout(timer); syncEl.textContent='Sincronizado · Conta'; syncEl.classList.add('ok'); }
+        if(!snap.metadata.fromCache){ contasServidor=true; migraRegraAntiga(); ready=true; clearTimeout(timer); syncEl.textContent='Sincronizado · Conta'; syncEl.classList.add('ok'); }
         else { ready=true; if(!navigator.onLine){ syncEl.textContent='Sem internet'; syncEl.classList.remove('ok'); } }
         render();
       }, err=>{ clearTimeout(timer); ready=true; syncEl.textContent='Erro de acesso'; toast('Não foi possível ler os dados: '+(err.code||'')); render(); });
