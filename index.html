@@ -236,6 +236,19 @@ nav.bar button.add svg{width:28px;height:28px}
 @media (max-width:370px){.two,.facts{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
  
+/* bloqueio por senha */
+.lock{position:fixed;inset:0;z-index:40;background:linear-gradient(160deg,var(--hero-a),var(--hero-b));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px))}
+.lock h2{font-size:22px;color:#fff}
+.lock p{margin:0;opacity:.85;font-weight:600;min-height:20px;text-align:center}
+.dots{display:flex;gap:16px}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.8)}
+.dots i.on{background:#fff}
+.dots.err{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pad{display:grid;grid-template-columns:repeat(3,76px);gap:14px}
+.pad button{width:76px;height:76px;border-radius:50%;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:28px;font-weight:700;cursor:pointer}
+.pad button:active{background:rgba(255,255,255,.3)}
+.pad button.txt{font-size:14px;background:transparent}
 /* login e conta */
 .login{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
 .login .box{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
@@ -391,6 +404,12 @@ nav.bar button.add svg{width:28px;height:28px}
       <p class="muted" id="importMsg" style="font-size:14px"></p>
     </div>
     <div class="card">
+      <p><strong>Senha do app</strong></p>
+      <p class="muted" style="font-size:14px" id="pinInfo">Peça uma senha de 4 números para abrir o app neste aparelho.</p>
+      <button type="button" class="btn" id="btnPin">Criar senha</button>
+      <button type="button" class="btn danger" id="btnPinOff" hidden>Remover senha</button>
+    </div>
+    <div class="card">
       <p><strong>Lembretes no calendário</strong></p>
       <p class="muted" style="font-size:14px">Cria eventos no calendário do celular com quem paga em cada dia (próximos 3 meses), com aviso às 9h. Depois de baixar, toque no arquivo e escolha “Adicionar todos”.</p>
       <button type="button" class="btn" id="btnIcs">Adicionar vencimentos ao calendário</button>
@@ -403,6 +422,13 @@ nav.bar button.add svg{width:28px;height:28px}
   </section>
 </div>
 
+<div class="lock" id="lock" hidden>
+  <span class="logo" style="width:56px;height:56px;border-radius:18px;background:rgba(255,255,255,.15);display:grid;place-items:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+  <h2 id="lockTit">Digite sua senha</h2>
+  <div class="dots" id="lockDots"><i></i><i></i><i></i><i></i></div>
+  <p id="lockMsg"></p>
+  <div class="pad" id="lockPad"></div>
+</div>
 <div class="login" id="login" hidden>
   <div class="box">
     <span class="logo" style="background:linear-gradient(135deg,var(--hero-a),var(--hero-b));display:grid;place-items:center;color:#fff"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16v12H4z"/><path d="M4 7l2-3h12l2 3"/><path d="M15 13h2"/></svg></span>
@@ -902,6 +928,61 @@ nav.bar button.add svg{width:28px;height:28px}
   }
 
   resetForm(); render();
+
+  // ---------- senha de 4 números (guardada só neste aparelho) ----------
+  const PINK='cc_pin_v1';
+  const lsGet=k=>{ try{ return localStorage.getItem(k); }catch(e){ return null; } };
+  const lsSet=(k,v)=>{ try{ v===null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} };
+  async function hashPin(pin){
+    const salt='caderneta:'+(lsGet('cc_pin_salt')||'');
+    if(window.crypto&&crypto.subtle){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(salt+pin)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+    let h=0; for(const ch of salt+pin) h=(h*31+ch.charCodeAt(0))|0; return 'x'+h;
+  }
+  let pinModo=null, pinBuf='', pinPrimeiro='', pinCb=null;
+  function pinUI(){
+    $('#lockDots').querySelectorAll('i').forEach((el,ix)=>el.classList.toggle('on',ix<pinBuf.length));
+  }
+  function abrirPin(modo,cb){
+    pinModo=modo; pinBuf=''; pinPrimeiro=''; pinCb=cb||null;
+    $('#lockTit').textContent = modo==='criar'?'Crie uma senha de 4 números':(modo==='confirmar'?'Repita a senha':'Digite sua senha');
+    $('#lockMsg').textContent=''; pinUI(); $('#lock').hidden=false;
+    const pad=$('#lockPad'); pad.innerHTML='';
+    ['1','2','3','4','5','6','7','8','9', modo==='entrar'?'Esqueci':'Cancelar','0','⌫'].forEach(k=>{
+      const b=document.createElement('button'); b.type='button'; b.textContent=k; if(k.length>1) b.className='txt';
+      b.addEventListener('click',()=>teclaPin(k)); pad.appendChild(b);
+    });
+  }
+  async function teclaPin(k){
+    if(k==='⌫'){ pinBuf=pinBuf.slice(0,-1); pinUI(); return; }
+    if(k==='Cancelar'){ $('#lock').hidden=true; return; }
+    if(k==='Esqueci'){ $('#lockMsg').textContent='Para trocar a senha, entre de novo com sua conta.'; lsSet(PINK,null); setTimeout(()=>{ $('#lock').hidden=true; if(window.firebase&&firebase.apps&&firebase.apps.length) firebase.auth().signOut(); },1200); return; }
+    if(pinBuf.length>=4) return;
+    pinBuf+=k; pinUI();
+    if(pinBuf.length<4) return;
+    const v=pinBuf; await new Promise(r=>setTimeout(r,120));
+    if(pinModo==='criar'){ pinPrimeiro=v; pinModo='confirmar'; pinBuf=''; $('#lockTit').textContent='Repita a senha'; pinUI(); return; }
+    if(pinModo==='confirmar'){
+      if(v!==pinPrimeiro){ erroPin('As senhas não são iguais. Tente de novo.'); pinModo='criar'; $('#lockTit').textContent='Crie uma senha de 4 números'; return; }
+      lsSet('cc_pin_salt',String(Math.random()).slice(2)); lsSet(PINK,await hashPin(v)); $('#lock').hidden=true; toast('Senha criada'); atualizaPinInfo(); return;
+    }
+    if(await hashPin(v)===lsGet(PINK)){ $('#lock').hidden=true; ultimoUso=Date.now(); return; }
+    erroPin('Senha errada.');
+  }
+  function erroPin(msg){ const d=$('#lockDots'); d.classList.remove('err'); void d.offsetWidth; d.classList.add('err'); $('#lockMsg').textContent=msg; pinBuf=''; pinUI(); if(navigator.vibrate) navigator.vibrate(80); }
+  function atualizaPinInfo(){
+    const tem=!!lsGet(PINK);
+    $('#pinInfo').textContent = tem ? 'Ativada neste aparelho. O app pede a senha ao abrir e depois de 3 minutos fora.' : 'Peça uma senha de 4 números para abrir o app neste aparelho.';
+    $('#btnPin').textContent = tem ? 'Trocar senha' : 'Criar senha'; $('#btnPinOff').hidden=!tem;
+  }
+  $('#btnPin').addEventListener('click',()=>abrirPin('criar'));
+  $('#btnPinOff').addEventListener('click',()=>{ lsSet(PINK,null); atualizaPinInfo(); toast('Senha removida'); });
+  let ultimoUso=Date.now();
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){ ultimoUso=Date.now(); return; }
+    if(lsGet(PINK) && Date.now()-ultimoUso>3*60*1000 && $('#login').hidden) abrirPin('entrar');
+  });
+  atualizaPinInfo();
+  if(lsGet(PINK)) abrirPin('entrar');
 
   // ---------- Firebase ----------
   const syncEl=$('#sync');
