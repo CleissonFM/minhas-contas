@@ -754,7 +754,7 @@ nav.bar button.add svg{width:28px;height:28px}
       'auth/email-already-in-use':'Esse e-mail já tem conta. Toque em “Entrar”.','auth/weak-password':'A senha precisa ter pelo menos 6 caracteres.',
       'auth/too-many-requests':'Muitas tentativas. Espere alguns minutos.','auth/network-request-failed':'Sem internet. Verifique a conexão.',
       'auth/popup-closed-by-user':'A janela do Google foi fechada antes de terminar.','auth/unauthorized-domain':'Este endereço ainda não foi liberado no Firebase (Domínios autorizados).',
-      'auth/operation-not-allowed':'Esse tipo de entrada ainda não foi ativado no Firebase.'};
+      'auth/operation-not-allowed':'Esse tipo de entrada ainda não foi ativado no Firebase.','auth/configuration-not-found':'O login ainda não foi ativado no Firebase (Authentication → Método de login).'};
     return m[c] || ('Não foi possível entrar. '+(e&&e.message||''));
   }
   function mostraErro(msg){ const el=$('#loginErro'); el.textContent=msg; el.hidden=!msg; }
