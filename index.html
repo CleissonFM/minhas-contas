@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Caderneta">
 <link rel="manifest" href="manifest.webmanifest">
+<script>try{var t=localStorage.getItem('cc_tema');if(t&&t!=='verde')document.documentElement.setAttribute('data-tema',t);}catch(e){}</script>
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Caderneta de Contas</title>
@@ -235,6 +236,25 @@ nav.bar button.add svg{width:28px;height:28px}
 @media (max-width:370px){.two,.facts{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
  
+
+/* paletas de cores (escolhidas em Minha conta) */
+html[data-tema="grafite"]{--bg:#f2f2f7;--surface:#ffffff;--ink:#1c1c1e;--muted:#6e6e73;--line:#e5e5ea;--accent:#0a7aff;--accent-ink:#ffffff;--mint:#e5f0ff;--track:#e9e9ee;--out:#e5322a;--out-soft:#ffe5e3;--done:#8e8e93;--hero-a:#3a3a3c;--hero-b:#0b0b0c;--accent-2:#5ac8fa;--hero-shadow:rgba(0,0,0,.25);--hero-warn:#ff9c94;--toast-act:#64d2ff;}
+@media (prefers-color-scheme: dark){html[data-tema="grafite"]:not([data-theme="light"]){--bg:#000000;--surface:#1c1c1e;--ink:#f2f2f7;--muted:#98989f;--line:#2c2c2e;--accent:#0a84ff;--accent-ink:#ffffff;--mint:#0b2a4a;--track:#2c2c2e;--out:#ff6b61;--out-soft:#3a1714;--done:#8e8e93;--hero-a:#4a4a4e;--hero-b:#232326;--accent-2:#64d2ff;--hero-shadow:rgba(0,0,0,.4);--toast-act:#0a7aff;color-scheme:dark}}
+html[data-tema="grafite"][data-theme="dark"]{--bg:#000000;--surface:#1c1c1e;--ink:#f2f2f7;--muted:#98989f;--line:#2c2c2e;--accent:#0a84ff;--accent-ink:#ffffff;--mint:#0b2a4a;--track:#2c2c2e;--out:#ff6b61;--out-soft:#3a1714;--done:#8e8e93;--hero-a:#4a4a4e;--hero-b:#232326;--accent-2:#64d2ff;--hero-shadow:rgba(0,0,0,.4);--toast-act:#0a7aff;color-scheme:dark}
+html[data-tema="dourado"]{--bg:#f6f4ef;--surface:#ffffff;--ink:#17140f;--muted:#756f64;--line:#e8e3d8;--accent:#9a7419;--accent-ink:#ffffff;--mint:#f5ecd6;--track:#ece6d9;--out:#c2410c;--out-soft:#fde8dc;--done:#9a9488;--hero-a:#2e2922;--hero-b:#0d0b08;--accent-2:#e0b84f;--hero-shadow:rgba(0,0,0,.3);--hero-warn:#ffb38a;--toast-act:#e0b84f;}
+@media (prefers-color-scheme: dark){html[data-tema="dourado"]:not([data-theme="light"]){--bg:#0d0c0a;--surface:#1a1814;--ink:#f3efe6;--muted:#a39b8c;--line:#2d2a24;--accent:#d4a93c;--accent-ink:#1a1408;--mint:#3a3018;--track:#2b2822;--out:#ff8a5c;--out-soft:#3d1f12;--done:#8a8478;--hero-a:#4a4134;--hero-b:#1d1912;--accent-2:#f0cf6e;--hero-shadow:rgba(0,0,0,.4);--toast-act:#9a7419;color-scheme:dark}}
+html[data-tema="dourado"][data-theme="dark"]{--bg:#0d0c0a;--surface:#1a1814;--ink:#f3efe6;--muted:#a39b8c;--line:#2d2a24;--accent:#d4a93c;--accent-ink:#1a1408;--mint:#3a3018;--track:#2b2822;--out:#ff8a5c;--out-soft:#3d1f12;--done:#8a8478;--hero-a:#4a4134;--hero-b:#1d1912;--accent-2:#f0cf6e;--hero-shadow:rgba(0,0,0,.4);--toast-act:#9a7419;color-scheme:dark}
+html[data-tema="roxo"]{--bg:#f3f4fb;--surface:#ffffff;--ink:#141633;--muted:#646a8a;--line:#e2e4f2;--accent:#4f46e5;--accent-ink:#ffffff;--mint:#e8e7fd;--track:#e6e7f4;--out:#e11d48;--out-soft:#ffe4ea;--done:#8a8fae;--hero-a:#6d5dfc;--hero-b:#3b2bb8;--accent-2:#a78bfa;--hero-shadow:rgba(59,43,184,.3);--hero-warn:#ffc2d1;--toast-act:#a5b4fc;}
+@media (prefers-color-scheme: dark){html[data-tema="roxo"]:not([data-theme="light"]){--bg:#0d0e1a;--surface:#171930;--ink:#eceefe;--muted:#9ea3c7;--line:#272a47;--accent:#8b83ff;--accent-ink:#0d0b2a;--mint:#24214f;--track:#24274a;--out:#ff7a93;--out-soft:#3d1622;--done:#7d82a6;--hero-a:#5b4bf0;--hero-b:#2a1c8f;--accent-2:#c4b5fd;--hero-shadow:rgba(0,0,0,.4);--toast-act:#4f46e5;color-scheme:dark}}
+html[data-tema="roxo"][data-theme="dark"]{--bg:#0d0e1a;--surface:#171930;--ink:#eceefe;--muted:#9ea3c7;--line:#272a47;--accent:#8b83ff;--accent-ink:#0d0b2a;--mint:#24214f;--track:#24274a;--out:#ff7a93;--out-soft:#3d1622;--done:#7d82a6;--hero-a:#5b4bf0;--hero-b:#2a1c8f;--accent-2:#c4b5fd;--hero-shadow:rgba(0,0,0,.4);--toast-act:#4f46e5;color-scheme:dark}
+html[data-tema="marinho"]{--bg:#f2f5f9;--surface:#ffffff;--ink:#0f1b2d;--muted:#5f6f86;--line:#e1e7ef;--accent:#1d4ed8;--accent-ink:#ffffff;--mint:#e3ecfd;--track:#e4e9f1;--out:#e4512f;--out-soft:#ffe8e2;--done:#8592a6;--hero-a:#173f75;--hero-b:#081a33;--accent-2:#38bdf8;--hero-shadow:rgba(8,26,51,.3);--hero-warn:#ffb4a3;--toast-act:#7dd3fc;}
+@media (prefers-color-scheme: dark){html[data-tema="marinho"]:not([data-theme="light"]){--bg:#070d17;--surface:#111a2a;--ink:#e8eef7;--muted:#93a3ba;--line:#1f2b3f;--accent:#5b9bff;--accent-ink:#06101f;--mint:#12284a;--track:#1c2840;--out:#ff8a6e;--out-soft:#3a1c15;--done:#7e8ca2;--hero-a:#173f75;--hero-b:#050f22;--accent-2:#7dd3fc;--hero-shadow:rgba(0,0,0,.4);--toast-act:#1d4ed8;color-scheme:dark}}
+html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--ink:#e8eef7;--muted:#93a3ba;--line:#1f2b3f;--accent:#5b9bff;--accent-ink:#06101f;--mint:#12284a;--track:#1c2840;--out:#ff8a6e;--out-soft:#3a1c15;--done:#7e8ca2;--hero-a:#173f75;--hero-b:#050f22;--accent-2:#7dd3fc;--hero-shadow:rgba(0,0,0,.4);--toast-act:#1d4ed8;color-scheme:dark}
+.temas{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.tema{border:2px solid transparent;background:transparent;border-radius:16px;padding:6px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted);text-align:center;line-height:1.15}
+.tema i{width:44px;height:44px;border-radius:14px;display:block;box-shadow:var(--shadow);position:relative}
+.tema i::after{content:"";position:absolute;right:-3px;bottom:-3px;width:16px;height:16px;border-radius:50%;background:var(--sw);border:2px solid var(--surface)}
+.tema[aria-pressed="true"]{border-color:var(--accent);color:var(--ink)}
 /* bloqueio por senha */
 .lock{position:fixed;inset:0;z-index:40;background:linear-gradient(160deg,var(--hero-a),var(--hero-b));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(20px + env(safe-area-inset-bottom,0px))}
 .lock h2{font-size:22px;color:#fff}
@@ -401,6 +421,10 @@ nav.bar button.add svg{width:28px;height:28px}
       <label class="btn" for="fileImport" style="display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);font-size:15px">Importar arquivo de backup</label>
       <input type="file" id="fileImport" accept=".json,application/json" hidden>
       <p class="muted" id="importMsg" style="font-size:14px"></p>
+    </div>
+    <div class="card">
+      <p><strong>Cores do app</strong></p>
+      <div class="temas" id="temas"></div>
     </div>
     <div class="card">
       <p><strong>Senha do app</strong></p>
@@ -988,6 +1012,24 @@ nav.bar button.add svg{width:28px;height:28px}
   atualizaPinInfo();
   if(lsGet(PINK)) abrirPin('entrar');
 
+  // ---------- cores do app ----------
+  const TEMAS=[["verde", "Verde", "#0f7a56", "#083726", "#3fcf94"], ["grafite", "Grafite e azul", "#3a3a3c", "#0b0b0c", "#0a7aff"], ["dourado", "Preto e dourado", "#2e2922", "#0d0b08", "#e0b84f"], ["roxo", "Roxo", "#6d5dfc", "#3b2bb8", "#a78bfa"], ["marinho", "Azul-marinho", "#173f75", "#081a33", "#38bdf8"]];
+  function aplicaTema(t,salvar){
+    if(!TEMAS.some(x=>x[0]===t)) t='verde';
+    if(t==='verde') document.documentElement.removeAttribute('data-tema'); else document.documentElement.setAttribute('data-tema',t);
+    lsSet('cc_tema',t);
+    const m=document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content',(TEMAS.find(x=>x[0]===t)||TEMAS[0])[2]);
+    document.querySelectorAll('#temas .tema').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
+    if(salvar && db){ salva(db.doc('config/prefs').set({tema:t,atualizadoEm:new Date().toISOString()})); }
+  }
+  (function(){
+    const box=$('#temas');
+    TEMAS.forEach(([k,nome,a,b,sw])=>{ const el=document.createElement('button'); el.type='button'; el.className='tema'; el.dataset.t=k;
+      el.innerHTML=`<i style="background:linear-gradient(140deg,${a},${b});--sw:${sw}"></i>${nome}`;
+      el.addEventListener('click',()=>{ aplicaTema(k,true); toast('Cores alteradas'); }); box.appendChild(el); });
+    aplicaTema(lsGet('cc_tema')||'verde',false);
+  })();
+
   // ---------- Firebase ----------
   const syncEl=$('#sync');
   syncEl.addEventListener('click',()=>go('conta'));
@@ -1035,7 +1077,7 @@ nav.bar button.add svg{width:28px;height:28px}
       try{ await auth.sendPasswordResetEmail(em); mostraErro(''); toast('Enviamos um e-mail para trocar a senha.'); }catch(err){ mostraErro(erroPt(err)); }
     });
     $('#btnSair').addEventListener('click',()=>auth.signOut());
-    let unsub=null;
+    let unsub=null, unsubPrefs=null;
     auth.onAuthStateChanged(u=>{
       if(unsub){ unsub(); unsub=null; }
       contas=[]; ready=false;
@@ -1043,6 +1085,7 @@ nav.bar button.add svg{width:28px;height:28px}
       $('#login').hidden=true; $('#contaEmail').textContent=u.email||u.displayName||'—';
       const base='users/'+u.uid+'/';
       db={ collection:p=>fs.collection(base+p), doc:p=>fs.doc(base+p) };
+      try{ if(unsubPrefs) unsubPrefs(); unsubPrefs=fs.doc(base+'config/prefs').onSnapshot(d=>{ const t=d.exists&&d.data().tema; if(t && t!==lsGet('cc_tema')) aplicaTema(t,false); },()=>{}); }catch(e){}
       const timer=setTimeout(()=>{ if(!ready){ syncEl.textContent='Sem conexão…'; } },10000);
       syncEl.textContent='Carregando…';
       unsub=fs.collection(base+'contas').onSnapshot({includeMetadataChanges:true},snap=>{
