@@ -250,6 +250,15 @@ html[data-tema="roxo"][data-theme="dark"]{--bg:#0d0e1a;--surface:#171930;--ink:#
 html[data-tema="marinho"]{--bg:#f2f5f9;--surface:#ffffff;--ink:#0f1b2d;--muted:#5f6f86;--line:#e1e7ef;--accent:#1d4ed8;--accent-ink:#ffffff;--mint:#e3ecfd;--track:#e4e9f1;--out:#e4512f;--out-soft:#ffe8e2;--done:#8592a6;--hero-a:#173f75;--hero-b:#081a33;--accent-2:#38bdf8;--hero-shadow:rgba(8,26,51,.3);--hero-warn:#ffb4a3;--toast-act:#7dd3fc;}
 @media (prefers-color-scheme: dark){html[data-tema="marinho"]:not([data-theme="light"]){--bg:#070d17;--surface:#111a2a;--ink:#e8eef7;--muted:#93a3ba;--line:#1f2b3f;--accent:#5b9bff;--accent-ink:#06101f;--mint:#12284a;--track:#1c2840;--out:#ff8a6e;--out-soft:#3a1c15;--done:#7e8ca2;--hero-a:#173f75;--hero-b:#050f22;--accent-2:#7dd3fc;--hero-shadow:rgba(0,0,0,.4);--toast-act:#1d4ed8;color-scheme:dark}}
 html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--ink:#e8eef7;--muted:#93a3ba;--line:#1f2b3f;--accent:#5b9bff;--accent-ink:#06101f;--mint:#12284a;--track:#1c2840;--out:#ff8a6e;--out-soft:#3a1c15;--done:#7e8ca2;--hero-a:#173f75;--hero-b:#050f22;--accent-2:#7dd3fc;--hero-shadow:rgba(0,0,0,.4);--toast-act:#1d4ed8;color-scheme:dark}
+.iconbtn{width:38px;height:38px;border-radius:12px;border:0;background:var(--surface);color:var(--accent);display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow)}
+.iconbtn svg{width:21px;height:21px}
+.novidades{background:var(--surface);border-radius:20px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;border:2px solid var(--accent)}
+.novidades ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.nh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.nh strong{font-size:17px}
+.x{border:0;background:var(--track);color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer}
+.sheet{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center}
+.sheet-box{background:var(--surface);width:100%;max-width:600px;border-radius:24px 24px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
 .temas{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .tema{border:2px solid transparent;background:transparent;border-radius:16px;padding:6px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted);text-align:center;line-height:1.15}
 .tema i{width:44px;height:44px;border-radius:14px;display:block;box-shadow:var(--shadow);position:relative}
@@ -291,7 +300,25 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
 <div class="wrap">
   <div class="top">
     <div class="brand"><span class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16v12H4z"/><path d="M4 7l2-3h12l2 3"/><path d="M15 13h2"/></svg></span>Caderneta</div>
-    <button type="button" class="sync" id="sync" aria-label="Minha conta">Conectando…</button>
+    <div style="display:flex;gap:8px;align-items:center"><button type="button" class="iconbtn" id="btnCores" aria-label="Cores do app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.8 1.6-1.6 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H16a5 5 0 0 0 5-5c0-4.1-4-7.4-9-7.4Z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7.3" r="1.2" fill="currentColor"/><circle cx="15" cy="7.8" r="1.2" fill="currentColor"/></svg></button><button type="button" class="sync" id="sync" aria-label="Minha conta">Conectando…</button></div>
+  </div>
+  <div class="novidades" id="novidades" hidden>
+    <div class="nh"><strong>Novidades no app</strong><button type="button" class="x" id="novFechar" aria-label="Fechar">×</button></div>
+    <ul>
+      <li><b>Cores:</b> escolha abaixo ou toque no ícone de paleta no topo.</li>
+      <li><b>WhatsApp</b> direto na lista de nomes.</li>
+      <li><b>Pagamento parcial</b>, histórico e recibo (toque na data da parcela).</li>
+      <li>Tela <b>Meses</b>: toque num mês para ver quem paga.</li>
+      <li><b>Senha</b>, <b>calendário</b> e <b>planilha</b> em “Conta”.</li>
+    </ul>
+    <div class="temas"></div>
+  </div>
+  <div class="sheet" id="sheetCores" hidden>
+    <div class="sheet-box" role="dialog" aria-label="Cores do app">
+      <div class="nh"><strong>Cores do app</strong><button type="button" class="x" id="coresFechar" aria-label="Fechar">×</button></div>
+      <div class="temas"></div>
+      <p class="muted" style="margin:0;font-size:13px">A cor escolhida vale em todos os seus aparelhos.</p>
+    </div>
   </div>
 
   <!-- PESSOAS -->
@@ -1019,15 +1046,23 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     if(t==='verde') document.documentElement.removeAttribute('data-tema'); else document.documentElement.setAttribute('data-tema',t);
     lsSet('cc_tema',t);
     const m=document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content',(TEMAS.find(x=>x[0]===t)||TEMAS[0])[2]);
-    document.querySelectorAll('#temas .tema').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
+    document.querySelectorAll('.temas .tema').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
     if(salvar && db){ salva(db.doc('config/prefs').set({tema:t,atualizadoEm:new Date().toISOString()})); }
   }
   (function(){
-    const box=$('#temas');
-    TEMAS.forEach(([k,nome,a,b,sw])=>{ const el=document.createElement('button'); el.type='button'; el.className='tema'; el.dataset.t=k;
-      el.innerHTML=`<i style="background:linear-gradient(140deg,${a},${b});--sw:${sw}"></i>${nome}`;
-      el.addEventListener('click',()=>{ aplicaTema(k,true); toast('Cores alteradas'); }); box.appendChild(el); });
+    document.querySelectorAll('.temas').forEach(box=>{
+      TEMAS.forEach(([k,nome,a,b,sw])=>{ const el=document.createElement('button'); el.type='button'; el.className='tema'; el.dataset.t=k;
+        el.innerHTML=`<i style="background:linear-gradient(140deg,${a},${b});--sw:${sw}"></i>${nome}`;
+        el.addEventListener('click',()=>{ aplicaTema(k,true); toast('Cores alteradas'); }); box.appendChild(el); });
+    });
     aplicaTema(lsGet('cc_tema')||'verde',false);
+    $('#btnCores').addEventListener('click',()=>{ $('#sheetCores').hidden=false; });
+    $('#coresFechar').addEventListener('click',()=>{ $('#sheetCores').hidden=true; });
+    $('#sheetCores').addEventListener('click',e=>{ if(e.target.id==='sheetCores') $('#sheetCores').hidden=true; });
+    // aviso de novidades: aparece uma vez a cada versão nova
+    const VERSAO='2026-11-12a';
+    if(lsGet('cc_novidades')!==VERSAO) $('#novidades').hidden=false;
+    $('#novFechar').addEventListener('click',()=>{ $('#novidades').hidden=true; lsSet('cc_novidades',VERSAO); });
   })();
 
   // ---------- Firebase ----------
@@ -1149,7 +1184,17 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
 })();
 </script>
 <script>
-if('serviceWorker' in navigator && location.protocol==='https:'){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+      reg.update().catch(()=>{});
+      document.addEventListener('visibilitychange',()=>{ if(!document.hidden) reg.update().catch(()=>{}); });
+    }).catch(()=>{});
+    // quando chega uma versão nova do app, recarrega sozinho uma vez
+    let recarregou=false;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(recarregou) return; recarregou=true; location.reload(); });
+  });
+}
 </script>
 </body>
 </html>

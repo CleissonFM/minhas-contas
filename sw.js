@@ -1,5 +1,5 @@
 // Guarda o app no aparelho para abrir mesmo sem internet.
-const CACHE='caderneta-v6';
+const CACHE='caderneta-v7';
 const APP=['./','index.html','firebase-config.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 const SDK=['app','auth','firestore'].map(n=>`https://www.gstatic.com/firebasejs/10.12.2/firebase-${n}-compat.js`);
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll([...APP,...SDK]).catch(()=>c.addAll(APP))).then(()=>self.skipWaiting())); });
@@ -13,7 +13,7 @@ self.addEventListener('fetch',e=>{
   const mesmoSite=url.origin===self.location.origin;
   if(mesmoSite){
     // App: busca a versão nova; sem internet, usa a guardada.
-    e.respondWith(fetch(req).then(r=>{ if(r.ok){ const cp=r.clone(); caches.open(CACHE).then(c=>c.put(req,cp)); } return r; }).catch(()=>caches.match(req,{ignoreSearch:true}).then(r=>r||caches.match('index.html'))));
+    e.respondWith(fetch(req,{cache:'no-store'}).then(r=>{ if(r.ok){ const cp=r.clone(); caches.open(CACHE).then(c=>c.put(req,cp)); } return r; }).catch(()=>caches.match(req,{ignoreSearch:true}).then(r=>r||caches.match('index.html'))));
     return;
   }
   if(url.hostname==='www.gstatic.com'||url.hostname.startsWith('fonts.')){
