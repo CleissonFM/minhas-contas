@@ -7,3 +7,5 @@ window.FIREBASE_CONFIG = {
   messagingSenderId: "244446097812",
   appId: "1:244446097812:web:adf8476ff2efecbe3bdf81"
 };
+// WhatsApp de quem libera o acesso online (botão "Pedir acesso").
+window.CONTATO_WHATSAPP = "98984084983";
