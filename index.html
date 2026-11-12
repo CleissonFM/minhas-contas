@@ -331,6 +331,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   <div class="novidades" id="novidades" hidden>
     <div class="nh"><strong>Novidades no app</strong><button type="button" class="x" id="novFechar" aria-label="Fechar">×</button></div>
     <ul>
+      <li><b>Sem conta e offline:</b> dá para usar só neste aparelho, sem internet. E o botão <b>Instalar o app</b> fica em “Conta”.</li>
       <li><b>Cobrança:</b> na ficha de cada pessoa, marque se pagou, se não respondeu ou o dia que prometeu pagar.</li>
       <li><b>Compartilhe o app:</b> cada pessoa cria a própria conta e vê só os próprios dados (em “Conta”).</li>
       <li><b>Sua regra de acréscimo</b> pode ser ajustada em “Conta”.</li>
@@ -471,6 +472,19 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     <button type="button" class="btn ghost back" data-back="1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Pessoas</button>
     <h2>Minha conta</h2>
     <div class="card"><p class="muted">Conectado como</p><p><strong id="contaEmail">—</strong></p><button type="button" class="btn" id="btnSair">Sair</button></div>
+    <div class="card" id="cardLocal" hidden>
+      <p><strong>Dados só neste aparelho</strong></p>
+      <p class="muted" style="font-size:14px">Tudo fica guardado neste celular e funciona sem internet. Se o celular for trocado, formatado ou o app for apagado, os dados se perdem. Por isso, baixe a <b>cópia de segurança</b> de vez em quando e guarde em Arquivos, no e-mail ou no WhatsApp.</p>
+      <p class="muted" style="font-size:14px">Quer usar em vários aparelhos? Baixe a cópia de segurança, saia, entre com uma conta Google e importe o arquivo.</p>
+      <button type="button" class="btn danger" id="btnApagarLocal">Apagar todos os dados deste aparelho</button>
+      <div class="confirm" id="apagarLocalBox" hidden>Tem certeza? Isso não pode ser desfeito. <button type="button" class="btn small danger" id="btnApagarLocalSim">Sim, apagar tudo</button><button type="button" class="btn small" id="btnApagarLocalNao">Não</button></div>
+    </div>
+    <div class="card">
+      <p><strong>Instalar o app</strong></p>
+      <p class="muted" style="font-size:14px" id="instInfo">Coloque o app na tela do celular, com ícone próprio. Ele abre em tela cheia e funciona sem internet.</p>
+      <button type="button" class="btn primary" id="btnInstalar">Instalar o app</button>
+      <div id="instPassos" class="obs" hidden></div>
+    </div>
     <div class="card">
       <p><strong>Cópia de segurança</strong></p>
       <p class="muted" style="font-size:14px">Baixe um arquivo com todas as suas contas, ou traga de volta um arquivo salvo antes.</p>
@@ -531,9 +545,13 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     <span class="logo" style="background:linear-gradient(135deg,var(--hero-a),var(--hero-b));display:grid;place-items:center;color:#fff"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16v12H4z"/><path d="M4 7l2-3h12l2 3"/><path d="M15 13h2"/></svg></span>
     <h1>Caderneta de Contas</h1>
     <p>Quem me deve e o que eu devo, em qualquer aparelho.</p>
+    <details class="hist" id="instLoginBox"><summary>Como instalar no celular</summary><div class="obs" id="instLogin"></div></details>
     <p class="erro" id="cfgMsg" hidden>O app ainda não foi ligado ao banco de dados (Firebase). Falta a configuração.</p>
     <button type="button" class="btn gbtn" id="btnGoogle"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.2-2.1 3.5-5.1 3.5-8.7Z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6h-4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.4.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9Z"/></svg>Entrar com Google</button>
-    <div class="ou">ou com e-mail</div>
+    <div class="ou">ou</div>
+    <button type="button" class="btn" id="btnLocal" style="border-style:dashed">Usar sem conta, só neste aparelho (offline)</button>
+    <p class="muted" style="font-size:13px;margin:-4px 0 0">Sem conta, os dados ficam só neste celular e não aparecem em outros aparelhos. Faça cópias de segurança de vez em quando.</p>
+    <div class="ou">ou entre com e-mail</div>
     <form id="formLogin" style="padding:16px;gap:12px">
       <div class="field"><label for="lEmail">E-mail</label><input id="lEmail" type="email" autocomplete="email" required></div>
       <div class="field"><label for="lSenha">Senha</label><input id="lSenha" type="password" autocomplete="current-password" minlength="6" required></div>
@@ -1190,7 +1208,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     $('#coresFechar').addEventListener('click',()=>{ $('#sheetCores').hidden=true; });
     $('#sheetCores').addEventListener('click',e=>{ if(e.target.id==='sheetCores') $('#sheetCores').hidden=true; });
     // aviso de novidades: aparece uma vez a cada versão nova
-    const VERSAO='2026-11-12c';
+    const VERSAO='2026-11-12d';
     if(lsGet('cc_novidades')!==VERSAO) $('#novidades').hidden=false;
     $('#novFechar').addEventListener('click',()=>{ $('#novidades').hidden=true; lsSet('cc_novidades',VERSAO); });
   })();
@@ -1250,10 +1268,98 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     return m[c] || ('Não foi possível entrar. '+(e&&e.message||''));
   }
   function mostraErro(msg){ const el=$('#loginErro'); el.textContent=msg; el.hidden=!msg; }
+  // ---------- instalar o app ----------
+  let promptInstalar=null;
+  const instalado=()=>window.matchMedia&&matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); promptInstalar=e; });
+  function passosInstalar(){
+    const ua=navigator.userAgent||'', ios=/iPhone|iPad|iPod/.test(ua)||(/Mac/.test(ua)&&'ontouchend' in document);
+    const inApp=/FBAN|FBAV|Instagram|WhatsApp|Line\//i.test(ua);
+    if(inApp) return '<b>Abra este link no navegador</b> (Safari no iPhone, Chrome no Android). Toque nos três pontinhos ou no ícone do navegador e escolha “Abrir no navegador”. Depois toque de novo em “Instalar o app”.';
+    if(ios) return '<b>No iPhone (Safari):</b><br>1. Toque no botão <b>Compartilhar</b> (quadrado com seta para cima).<br>2. Role e toque em <b>“Adicionar à Tela de Início”</b>.<br>3. Toque em <b>Adicionar</b>.<br>O ícone verde da Caderneta aparece na tela do celular.';
+    return '<b>No Android (Chrome):</b><br>1. Toque nos <b>três pontinhos</b> no canto de cima.<br>2. Toque em <b>“Instalar app”</b> ou <b>“Adicionar à tela inicial”</b>.<br>3. Confirme em <b>Instalar</b>.';
+  }
+  $('#btnInstalar').addEventListener('click',async()=>{
+    if(instalado()){ toast('O app já está instalado neste aparelho'); return; }
+    if(promptInstalar){ promptInstalar.prompt(); try{ await promptInstalar.userChoice; }catch(e){} promptInstalar=null; return; }
+    const b=$('#instPassos'); b.innerHTML=passosInstalar(); b.hidden=false;
+  });
+  $('#instLogin').innerHTML=passosInstalar();
+  if(instalado()){ $('#instInfo').textContent='O app já está instalado neste aparelho.'; $('#btnInstalar').hidden=true; $('#instLoginBox').hidden=true; }
+
+  // ---------- sessão: nuvem (Firebase) ou só neste aparelho ----------
+  let unsub=null, unsubPrefs=null, unsubPessoas=null, modoLocal=false;
+  function encerrarSessao(){
+    if(unsub){ unsub(); unsub=null; } if(unsubPessoas){ unsubPessoas(); unsubPessoas=null; } if(unsubPrefs){ unsubPrefs(); unsubPrefs=null; }
+    pessoasInfo={}; contas=[]; ready=false; prefsDados=null; contasServidor=false; regraCfg=null; db=null;
+  }
+  function iniciarSessao(uid,rotulo,dbImpl,local){
+    encerrarSessao();
+    modoLocal=!!local;
+    $('#login').hidden=true; $('#contaEmail').textContent=rotulo;
+    $('#cardLocal').hidden=!local; $('#btnSair').textContent = local ? 'Sair (os dados continuam neste aparelho)' : 'Sair';
+    if(uid!==uidAtual){
+      uidAtual=uid; lsSet('cc_uid',uid);
+      const velho=lsGet('cc_pin_v1'); if(velho && !lsGet(pinKey())){ lsSet(pinKey(),velho); lsSet(saltKey(),lsGet('cc_pin_salt')||''); }
+      lsSet('cc_pin_v1',null); lsSet('cc_pin_salt',null);
+      $('#lock').hidden=true;
+      if(lsGet(pinKey())) abrirPin('entrar');
+    }
+    atualizaPinInfo();
+    db=dbImpl;
+    try{ unsubPrefs=db.doc('config/prefs').onSnapshot(d=>{ const dd=(d.exists&&d.data())||{}; const t=dd.tema||'verde'; if(t!==lsGet('cc_tema')) aplicaTema(t,false); regraCfg=dd.regra&&dd.regra.limite?dd.regra:null; prefsDados=dd; mostraRegra(); if(!local) migraRegraAntiga(); },()=>{}); }catch(e){}
+    try{ unsubPessoas=db.collection('pessoas').onSnapshot(snap=>{ const m={}; snap.docs.forEach(d=>{ m[d.id]=d.data(); }); pessoasInfo=m; render(); },()=>{}); }catch(e){}
+    const timer=setTimeout(()=>{ if(!ready){ syncEl.textContent='Sem conexão…'; } },10000);
+    syncEl.textContent='Carregando…';
+    unsub=db.collection('contas').onSnapshot({includeMetadataChanges:true},snap=>{
+      contas=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.parcelas>0 && c.dataPrimeiroPagamento);
+      if(local){ ready=true; clearTimeout(timer); syncEl.textContent='Neste aparelho · Conta'; syncEl.classList.add('ok'); }
+      else if(!snap.metadata.fromCache){ contasServidor=true; migraRegraAntiga(); ready=true; clearTimeout(timer); syncEl.textContent='Sincronizado · Conta'; syncEl.classList.add('ok'); }
+      else { ready=true; if(!navigator.onLine){ syncEl.textContent='Sem internet'; syncEl.classList.remove('ok'); } }
+      render();
+    }, err=>{ clearTimeout(timer); ready=true; syncEl.textContent='Erro de acesso'; toast('Não foi possível ler os dados: '+(err.code||'')); render(); });
+  }
+  // banco de dados guardado só neste aparelho (funciona sem internet e sem conta)
+  function criaBancoLocal(){
+    const KEY='cc_local_db_v1';
+    let dados={}; try{ dados=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ dados={}; }
+    const subs=new Set(), copia=o=>o===undefined?undefined:JSON.parse(JSON.stringify(o));
+    const grava=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(dados)); return true; }catch(e){ toast('A memória do aparelho está cheia. Baixe uma cópia de segurança.'); return false; } };
+    const avisa=()=>setTimeout(()=>subs.forEach(f=>f()),0);
+    const novoId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    function docRef(path){ return { id:path.split('/').pop(), path,
+      set(d,o){ dados[path]=(o&&o.merge)?Object.assign({},dados[path]||{},copia(d)):copia(d); grava(); avisa(); return Promise.resolve(); },
+      update(d){ if(!dados[path]) return Promise.reject({code:'not-found'}); dados[path]=Object.assign({},dados[path],copia(d)); grava(); avisa(); return Promise.resolve(); },
+      delete(){ delete dados[path]; grava(); avisa(); return Promise.resolve(); },
+      onSnapshot(a,b){ const next=typeof a==='function'?a:b; const f=()=>{ const v=dados[path]; next({id:path.split('/').pop(),exists:!!v,data:()=>copia(v),metadata:{fromCache:false}}); }; subs.add(f); setTimeout(f,0); return ()=>subs.delete(f); } }; }
+    function colRef(path){ const n=path.split('/').length+1; return { path,
+      doc(id){ return docRef(path+'/'+(id||novoId())); },
+      add(d){ const r=this.doc(); return r.set(d).then(()=>r); },
+      onSnapshot(a,b,c){ const next=typeof a==='function'?a:b; const f=()=>{ const docs=Object.keys(dados).filter(k=>k.startsWith(path+'/')&&k.split('/').length===n).map(k=>({id:k.split('/').pop(),data:()=>copia(dados[k])})); next({docs,metadata:{fromCache:false}}); }; subs.add(f); setTimeout(f,0); return ()=>subs.delete(f); } }; }
+    return { collection:colRef, doc:docRef, apagarTudo(){ dados={}; grava(); avisa(); }, tamanho(){ try{ return (localStorage.getItem(KEY)||'').length; }catch(e){ return 0; } } };
+  }
+  let bancoLocal=null;
+  function iniciarLocal(){
+    lsSet('cc_modo','local');
+    if(!bancoLocal) bancoLocal=criaBancoLocal();
+    try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+    iniciarSessao('local','Só neste aparelho (sem conta, funciona offline)',bancoLocal,true);
+  }
+  $('#btnLocal').addEventListener('click',()=>iniciarLocal());
+  $('#btnApagarLocal').addEventListener('click',()=>{
+    const box=$('#apagarLocalBox'); box.hidden=false;
+  });
+  $('#btnApagarLocalSim').addEventListener('click',()=>{ if(bancoLocal) bancoLocal.apagarTudo(); $('#apagarLocalBox').hidden=true; toast('Todos os dados deste aparelho foram apagados'); go('lista'); });
+  $('#btnApagarLocalNao').addEventListener('click',()=>{ $('#apagarLocalBox').hidden=true; });
+  function sairLocal(){ lsSet('cc_modo',null); modoLocal=false; try{ if(window.firebase&&firebase.apps&&firebase.apps.length) firebase.auth().signOut(); }catch(e){} encerrarSessao(); $('#lock').hidden=true; $('#login').hidden=false; syncEl.textContent='Desconectado'; syncEl.classList.remove('ok'); go('lista'); }
+
   const cfg=window.FIREBASE_CONFIG;
+  const comecaLocal = lsGet('cc_modo')==='local';
+  if(comecaLocal) iniciarLocal();
   if(!cfg || !window.firebase){
-    $('#login').hidden=false; $('#cfgMsg').hidden=false; $('#btnGoogle').disabled=true; $('#btnEntrar').disabled=true;
-    syncEl.textContent='Sem configuração';
+    if(!comecaLocal){ $('#login').hidden=false; $('#cfgMsg').hidden=false; $('#btnGoogle').disabled=true; $('#btnEntrar').disabled=true; syncEl.textContent='Sem internet'; }
+    $('#btnSair').addEventListener('click',()=>{ if(modoLocal) sairLocal(); });
+    $('#cfgMsg').textContent = cfg ? 'Sem internet agora: o login com conta não carregou. Você pode usar sem conta, só neste aparelho, ou tentar de novo quando tiver internet.' : 'O app ainda não foi ligado ao banco de dados (Firebase). Falta a configuração.';
   } else {
     firebase.initializeApp(cfg);
     const auth=firebase.auth(), fs=firebase.firestore();
@@ -1281,39 +1387,21 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       try{ await auth.sendPasswordResetEmail(em); mostraErro(''); toast('Enviamos um e-mail para trocar a senha.'); }catch(err){ mostraErro(erroPt(err)); }
     });
     $('#btnSair').addEventListener('click',async()=>{
+      if(modoLocal){ sairLocal(); return; }
       // sai e apaga deste aparelho a cópia local dos dados desta conta
       try{ await auth.signOut(); }catch(e){}
       aplicaTema('verde',false); regraCfg=null; mostraRegra();
       try{ await fs.terminate(); await fs.clearPersistence(); }catch(e){}
       location.reload();
     });
-    let unsub=null, unsubPrefs=null, unsubPessoas=null;
     auth.onAuthStateChanged(u=>{
-      if(unsub){ unsub(); unsub=null; } if(unsubPessoas){ unsubPessoas(); unsubPessoas=null; } pessoasInfo={};
-      contas=[]; ready=false; prefsDados=null; contasServidor=false; regraCfg=null;
-      if(!u){ db=null; $('#lock').hidden=true; $('#login').hidden=false; syncEl.textContent='Desconectado'; syncEl.classList.remove('ok'); render(); return; }
-      $('#login').hidden=true; $('#contaEmail').textContent=u.email||u.displayName||'—';
-      if(u.uid!==uidAtual){
-        uidAtual=u.uid; lsSet('cc_uid',u.uid);
-        const velho=lsGet('cc_pin_v1'); if(velho && !lsGet(pinKey())){ lsSet(pinKey(),velho); lsSet(saltKey(),lsGet('cc_pin_salt')||''); }
-        lsSet('cc_pin_v1',null); lsSet('cc_pin_salt',null);
-        $('#lock').hidden=true;
-        if(lsGet(pinKey())) abrirPin('entrar');
-      }
-      atualizaPinInfo();
+      if(modoLocal) return; // no modo deste aparelho, a conta da nuvem não é usada
+      if(!u){ encerrarSessao(); $('#lock').hidden=true; $('#login').hidden=false; syncEl.textContent='Desconectado'; syncEl.classList.remove('ok'); render(); return; }
+      lsSet('cc_modo',null);
       const base='users/'+u.uid+'/';
-      db={ collection:p=>fs.collection(base+p), doc:p=>fs.doc(base+p) };
-      try{ if(unsubPrefs) unsubPrefs(); unsubPrefs=fs.doc(base+'config/prefs').onSnapshot(d=>{ const dd=(d.exists&&d.data())||{}; const t=dd.tema||'verde'; if(t!==lsGet('cc_tema')) aplicaTema(t,false); regraCfg=dd.regra&&dd.regra.limite?dd.regra:null; prefsDados=dd; mostraRegra(); migraRegraAntiga(); },()=>{}); }catch(e){}
-      try{ unsubPessoas=fs.collection(base+'pessoas').onSnapshot(snap=>{ const m={}; snap.docs.forEach(d=>{ m[d.id]=d.data(); }); pessoasInfo=m; render(); },()=>{}); }catch(e){}
-      const timer=setTimeout(()=>{ if(!ready){ syncEl.textContent='Sem conexão…'; } },10000);
-      syncEl.textContent='Carregando…';
-      unsub=fs.collection(base+'contas').onSnapshot({includeMetadataChanges:true},snap=>{
-        contas=snap.docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.parcelas>0 && c.dataPrimeiroPagamento);
-        if(!snap.metadata.fromCache){ contasServidor=true; migraRegraAntiga(); ready=true; clearTimeout(timer); syncEl.textContent='Sincronizado · Conta'; syncEl.classList.add('ok'); }
-        else { ready=true; if(!navigator.onLine){ syncEl.textContent='Sem internet'; syncEl.classList.remove('ok'); } }
-        render();
-      }, err=>{ clearTimeout(timer); ready=true; syncEl.textContent='Erro de acesso'; toast('Não foi possível ler os dados: '+(err.code||'')); render(); });
+      iniciarSessao(u.uid,u.email||u.displayName||'—',{ collection:p=>fs.collection(base+p), doc:p=>fs.doc(base+p) },false);
     });
+  }
     // backup
     $('#btnExport').addEventListener('click',()=>{
       const data={app:'minhas-contas',versao:2,exportadoEm:new Date().toISOString(),contas,pessoas:pessoasInfo};
@@ -1365,7 +1453,6 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       }catch(err){ msg.textContent='Não foi possível ler o arquivo. Confira se é o backup certo.'; }
       e.target.value='';
     });
-  }
 })();
 </script>
 <script>
