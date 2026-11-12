@@ -6,7 +6,7 @@ App pessoal (PWA) para controlar quem me deve e o que eu devo.
 ## Arquivos
 - `index.html` — o app inteiro (HTML, CSS e JavaScript numa página só).
 - `firebase-config.js` — identificação do projeto Firebase (`minhas-contas-477f7`, não é senha) e o WhatsApp de contato para pedir acesso online (`CONTATO_WHATSAPP`).
-- `sw.js` — service worker: guarda o app no aparelho para abrir sem internet. **Ao publicar uma mudança, aumentar o número em `CACHE`** (ex.: `caderneta-v19` → `v20`).
+- `sw.js` — service worker: guarda o app no aparelho para abrir sem internet. **Ao publicar uma mudança, aumentar o número em `CACHE`** (ex.: `caderneta-v20` → `v21`).
 - `manifest.webmanifest`, `icon.svg` e ícones PNG — instalação na Tela de Início. Ícone oficial: **calendário branco e azul com R$** (`icon.svg`; PNGs gerados a partir dele, incluindo `icon-maskable-512.png` para Android).
 - `firestore.rules` — regras de segurança do Firestore (cada usuário só lê/grava `users/{uid}/...`).
 - `testes/` — testes automáticos com Playwright e um Firebase de mentira (`mockfb.js`). Rodar: `node testes/t21.js` etc. Usam `testes/dados-exemplo.json` (dados fictícios).
@@ -21,6 +21,12 @@ App pessoal (PWA) para controlar quem me deve e o que eu devo.
 - Cada conta pode ter um **acréscimo sugerido** (Conta → "Acréscimo sugerido"), que só pré-preenche o formulário. A conta do dono tem a sugestão: até 3x = ×1,7; mais de 3x = ×2.
 - Parcelas mensais (mesmo dia; último dia do mês se não existir) ou semanais (+7 dias). Cada parcela pode ter valor/data próprios, pagamento parcial e data de pagamento (`historico`).
 - Cobrança por pessoa: recebido, sem resposta, ou promessa de pagamento com data; histórico e último contato pelo WhatsApp.
+
+## Empréstimos (aba própria)
+- Coleção `emprestimos` (mesmo esquema nos dois modos). Campos: `nome, telefone, valor, data, tipo ('juros'|'livre'), taxa (%), periodo ('mensal'|'dias'), dias, prazo, obs, pagamentos:[{d,v,nota}]`.
+- **Com juros:** a cada período (mês ou N dias, a partir da data do empréstimo) cobra `taxa × dívida atual`. Cada pagamento paga primeiro os juros pendentes; o resto abate a dívida. Ex.: 10 mil a 30% → paga 3 mil = só juros (dívida segue 10 mil); paga 4 mil = dívida 9 mil, próximos juros 2.700. Juros não pagos ficam como "juros atrasados", **sem juros sobre juros**. O período seguinte só começa a contar no dia seguinte ao vencimento.
+- **Pagamento livre:** saldo = valor − pagamentos; prazo opcional.
+- Toda a conta está em `analisarEmp()`; testes em `testes/t25.js` (cenários) e `testes/t26.js` (telas).
 
 ## Outras funções
 WhatsApp com mensagem pronta (lista e ficha), recibo, resumo do mês, lembretes no calendário (.ics), planilha (.csv), cópia de segurança/importação, senha de 4 números por conta, 6 paletas de cores (modo claro e escuro; **Azul** é o padrão para quem é novo, combinando com o ícone), aviso de novidades a cada versão (`VERSAO` no código).

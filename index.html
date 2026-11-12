@@ -204,6 +204,19 @@ label{font-size:13.5px;font-weight:700;color:var(--muted)}
 .seg label{color:var(--muted);font-size:15px}
 .calc{background:var(--mint);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .seg3{grid-template-columns:repeat(3,1fr)}
+.seg3t{grid-template-columns:repeat(3,1fr)}
+.seg3t button{font-size:14px;padding:11px 2px}
+.aloc{font-size:14px;line-height:1.5;background:var(--bg);border-radius:12px;padding:10px 12px}
+.aloc b{font-variant-numeric:tabular-nums}
+.chips2{display:flex;gap:8px;flex-wrap:wrap}
+.chips2 .btn{min-height:38px;font-size:13.5px;padding:6px 12px}
+.pg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--bg)}
+.pg .t{font-weight:700;font-variant-numeric:tabular-nums}
+.pg small{grid-column:1/-1;color:var(--muted);font-size:12.5px}
+.pg .x{width:28px;height:28px;font-size:16px}
+.ext{font-size:13.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.ext .l{display:flex;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:10px;background:var(--bg)}
+.ext .l.pago{color:var(--accent)} .ext .l.falta{color:var(--out)}
 .seg3 label{font-size:14px;padding:10px 4px}
 .calc > label{color:var(--accent)}
 .calc .mult{font-size:14.5px!important;color:var(--ink)!important;background:var(--surface);border-radius:12px;padding:10px 12px;line-height:1.4}
@@ -366,6 +379,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   <div class="novidades" id="novidades" hidden>
     <div class="nh"><strong>Novidades no app</strong><button type="button" class="x" id="novFechar" aria-label="Fechar">×</button></div>
     <ul>
+      <li><b>Nova aba Empréstimos:</b> registre dinheiro emprestado com juros por período ou pagamento livre, e cada pagamento recebido.</li>
       <li><b>Sem conta e offline:</b> dá para usar só neste aparelho, sem internet. E o botão <b>Instalar o app</b> fica em “Conta”.</li>
       <li><b>Cobrança:</b> na ficha de cada pessoa, marque se pagou, se não respondeu ou o dia que prometeu pagar.</li>
       <li><b>Compartilhe o app:</b> cada pessoa cria a própria conta e vê só os próprios dados (em “Conta”).</li>
@@ -401,8 +415,9 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       <p class="muted" style="font-size:14px" id="migrarTxt"></p>
       <div class="acts"><button type="button" class="btn primary" id="btnMigrar">Enviar para a nuvem</button><button type="button" class="btn" id="btnMigrarNao">Agora não</button></div>
     </div>
-    <div class="seg" role="group" aria-label="Tipo">
+    <div class="seg seg3t" role="group" aria-label="Tipo">
       <button type="button" id="segRec" aria-pressed="true">Me devem</button>
+      <button type="button" id="segEmp" aria-pressed="false">Empréstimos</button>
       <button type="button" id="segPag" aria-pressed="false">Eu devo</button>
     </div>
     <div class="hero">
@@ -513,6 +528,50 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   </section>
 
   <!-- MESES -->
+  <!-- EMPRÉSTIMO (ficha) -->
+  <section id="vEmp" class="view" hidden>
+    <button type="button" class="btn ghost back" id="empVoltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Empréstimos</button>
+    <div class="phead"><span class="av" id="eAv"></span><div style="min-width:0"><h2 id="eNome"></h2><p class="muted" style="margin:2px 0 0;font-size:14px" id="eSub"></p></div></div>
+    <div class="status" id="eStatus"></div>
+    <div class="contato" id="eContato"></div>
+    <div class="item" id="eResumo"></div>
+    <div class="item" id="ePagar"></div>
+    <div class="item" id="eHist"></div>
+    <div class="acts" id="eAcoes"></div>
+  </section>
+
+  <!-- EMPRÉSTIMO (cadastro) -->
+  <section id="vNovoEmp" class="view" hidden>
+    <h2 id="empFormTit">Novo empréstimo</h2>
+    <form id="formEmp" autocomplete="off">
+      <div class="field"><label for="enNome">Para quem você emprestou</label><input id="enNome" required maxlength="80" placeholder="Ex.: João da Silva" list="nomesList"></div>
+      <div class="field"><label for="enTel">WhatsApp (com DDD)</label><input id="enTel" type="tel" inputmode="tel" maxlength="20" placeholder="Ex.: (11) 98765-4321"></div>
+      <div class="two">
+        <div class="field"><label for="enValor">Valor emprestado (R$)</label><input id="enValor" inputmode="decimal" placeholder="Ex.: 10.000,00" required></div>
+        <div class="field"><label for="enData">Data do empréstimo</label><input id="enData" type="date" required></div>
+      </div>
+      <div class="field"><label>Como vai pagar</label>
+        <div class="seg"><label><input type="radio" name="enTipo" value="juros" checked> Com juros</label><label><input type="radio" name="enTipo" value="livre"> Pagamento livre</label></div>
+      </div>
+      <div id="enJurosBox" class="calc">
+        <div class="two">
+          <div class="field"><label for="enTaxa">Juros por período (%)</label><input id="enTaxa" inputmode="decimal" placeholder="Ex.: 30"></div>
+          <div class="field"><label>Período</label><div class="seg"><label><input type="radio" name="enPer" value="mensal" checked> Mês</label><label><input type="radio" name="enPer" value="dias"> Dias</label></div></div>
+        </div>
+        <div class="field" id="enDiasBox" hidden><label for="enDias">A cada quantos dias</label><input id="enDias" type="number" inputmode="numeric" min="1" max="365" value="30"></div>
+        <div class="mult" id="enPrev"></div>
+        <p class="hint">Se pagar só os juros, a dívida continua igual. O que passar dos juros abate a dívida, e os juros do período seguinte são calculados sobre o que sobrou.</p>
+      </div>
+      <div id="enLivreBox" class="calc" hidden>
+        <div class="field"><label for="enPrazo">Prazo para quitar (opcional)</label><input id="enPrazo" type="date"></div>
+        <p class="hint">A pessoa paga quanto quiser, quando quiser. O app desconta cada pagamento e mostra quanto falta.</p>
+      </div>
+      <div class="field"><label for="enObs">Observações</label><textarea id="enObs" rows="2" maxlength="500" placeholder="Combinado, garantia, etc."></textarea></div>
+      <button class="btn primary" type="submit" id="enSalvar">Salvar empréstimo</button>
+      <button class="btn" type="button" id="enCancelar" hidden>Cancelar</button>
+    </form>
+  </section>
+
   <section id="vMeses" class="view" hidden>
     <button type="button" class="btn ghost back" data-back="1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>Pessoas</button>
     <h2>Quanto recebo por mês</h2>
@@ -682,7 +741,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   let contas=[], db=null, ready=false, editId=null, calcManual=false;
   let view='lista', tipoLista='receber', pessoaKey=null, selParc=null;
   const verTodas=new Set(), abertosHist=new Set(), mesAberto=new Set();
-  try{ const t=localStorage.getItem('cc_tipo'); if(t==='pagar') tipoLista='pagar'; }catch(e){}
+  try{ const t=localStorage.getItem('cc_tipo'); if(t==='pagar'||t==='emprestimo') tipoLista=t; }catch(e){}
 
   function toast(msg,acao,fn){
     const el=$('#toast'); el.innerHTML=''; const sp=document.createElement('span'); sp.textContent=msg; el.appendChild(sp);
@@ -723,18 +782,19 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   // ---------- navegação ----------
   function go(v){
     view=v;
-    $('#novidades').classList.toggle('fora',v!=='lista'); $('#vConta').hidden=v!=='conta'; $('#vLista').hidden=v!=='lista'; $('#vPessoa').hidden=v!=='pessoa'; $('#vNova').hidden=v!=='nova'; $('#vMeses').hidden=v!=='meses';
-    document.querySelectorAll('nav.bar [data-go]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.go===v || (v==='pessoa'&&b.dataset.go==='lista'))));
+    $('#novidades').classList.toggle('fora',v!=='lista'); $('#vConta').hidden=v!=='conta'; $('#vEmp').hidden=v!=='emp'; $('#vNovoEmp').hidden=v!=='novoEmp'; $('#vLista').hidden=v!=='lista'; $('#vPessoa').hidden=v!=='pessoa'; $('#vNova').hidden=v!=='nova'; $('#vMeses').hidden=v!=='meses';
+    document.querySelectorAll('nav.bar [data-go]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.go===v || ((v==='pessoa'||v==='emp')&&b.dataset.go==='lista') || (v==='novoEmp'&&b.dataset.go==='nova'))));
     window.scrollTo({top:0});
     render();
   }
-  document.querySelectorAll('nav.bar [data-go]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.go==='nova') resetForm(); go(b.dataset.go); }));
+  document.querySelectorAll('nav.bar [data-go]').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.go==='nova'&&tipoLista==='emprestimo'){ resetEmpForm(); go('novoEmp'); return; } if(b.dataset.go==='nova') resetForm(); go(b.dataset.go); }));
   $('#strip').addEventListener('click',()=>go('meses'));
   $('#voltar').addEventListener('click',()=>{ selParc=null; go('lista'); });
   document.querySelectorAll('[data-back]').forEach(b=>b.addEventListener('click',()=>go('lista')));
-  function setTipo(t){ tipoLista=t; $('#segRec').setAttribute('aria-pressed',String(t==='receber')); $('#segPag').setAttribute('aria-pressed',String(t==='pagar')); try{localStorage.setItem('cc_tipo',t);}catch(e){} render(); }
+  function setTipo(t){ tipoLista=t; $('#segRec').setAttribute('aria-pressed',String(t==='receber')); $('#segPag').setAttribute('aria-pressed',String(t==='pagar')); $('#segEmp').setAttribute('aria-pressed',String(t==='emprestimo')); try{localStorage.setItem('cc_tipo',t);}catch(e){} render(); }
   $('#segRec').addEventListener('click',()=>setTipo('receber'));
   $('#segPag').addEventListener('click',()=>setTipo('pagar'));
+  $('#segEmp').addEventListener('click',()=>setTipo('emprestimo'));
   $('#busca').addEventListener('input',render);
   setTipo(tipoLista);
 
@@ -746,7 +806,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     let mes=0; contas.filter(c=>c.tipo===tipoLista).forEach(c=>{ const a=analisar(c); a.datas.forEach((d,i)=>{ if(!(c.pagas||[])[i] && d.slice(0,7)===curKey) mes+=a.valores[i]; }); });
     const MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][now.getMonth()];
     $('#stripK').textContent = (tipoLista==='receber' ? 'Para receber em ' : 'Para pagar em ')+MES;
-    $('#stripV').textContent=fmt(mes);
+    $('#stripV').textContent=fmt(mes); $('#strip').hidden=false;
     const gAll=grupos(tipoLista), atrG=gAll.filter(g=>g.atr.length), atrV=atrG.reduce((s,g)=>s+g.atr.reduce((a,x)=>a+x.v,0),0);
     const falta=gAll.reduce((s,g)=>s+g.aberto,0);
     $('#heroStats').innerHTML = (atrG.length?`<div class="chip warn">Atrasado<b>${fmt(atrV)}</b></div>`:'<div class="chip">Atrasado<b>Nada</b></div>')+`<div class="chip">${tipoLista==='receber'?'Falta receber (total)':'Falta pagar (total)'}<b>${fmt(falta)}</b></div>`;
@@ -1055,6 +1115,219 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     toast('Compra apagada','Desfazer',()=>salva(db.doc('contas/'+id).set(copia)).then(()=>toast('Restaurada')));
   }
 
+
+  // =================== EMPRÉSTIMOS ===================
+  let emprestimos=[], empId=null, empEditId=null;
+  const r2=v=>Math.round((v||0)*100)/100;
+  function inicioPeriodo(e,k){ const b=parseISO(e.data); return iso(e.periodo==='dias' ? new Date(b.getFullYear(),b.getMonth(),b.getDate()+k*(e.dias||30)) : addMonths(b,k)); }
+  // simula o empréstimo: juros cobrados no início de cada período sobre o que ainda se deve;
+  // cada pagamento paga primeiro os juros pendentes e o resto abate a dívida.
+  function analisarEmp(e, extra){
+    const t=today(), pags=(e.pagamentos||[]).map((p,i)=>({...p,i})).concat(extra?[{...extra,i:-1,extra:true}]:[]).sort((a,b)=>a.d.localeCompare(b.d)||a.i-b.i);
+    const out={pags:[],periodos:[]};
+    let P=r2(e.valor), jp=0, atrasoBase=0, pi=0, pagoTotal=0;
+    const aplica=p=>{ let v=r2(p.v); const j=Math.min(v,jp); jp=r2(jp-j); v=r2(v-j); const a=Math.min(v,P); P=r2(P-a); v=r2(v-a); atrasoBase=Math.max(0,r2(atrasoBase-j)); pagoTotal=r2(pagoTotal+p.v); out.pags.push({...p,juros:r2(j),principal:r2(a),sobra:r2(v),saldoDepois:r2(P+jp),dividaDepois:P}); if(out.periodos.length){ out.periodos[out.periodos.length-1].pago=r2((out.periodos[out.periodos.length-1].pago||0)+j); } };
+    if(e.tipo==='livre'){
+      while(pi<pags.length) aplica(pags[pi++]);
+      const saldo=r2(P), venc=e.prazo||null;
+      out.principal=P; out.jurosPend=0; out.saldo=saldo; out.venc=venc; out.pagoTotal=pagoTotal; out.jurosAtrasados=0;
+      out.estado = saldo<=0.005 ? 'done' : (venc&&venc<t ? 'late' : (venc===t?'hoje':'ok'));
+      return out;
+    }
+    const taxa=(e.taxa||0)/100; let k=0, quitado=false;
+    while(k<600){
+      const ini=inicioPeriodo(e,k);
+      if(k>0 && ini>=t) break; // o período novo só começa a contar no dia seguinte ao vencimento
+      while(pi<pags.length && (k===0 ? pags[pi].d<ini : pags[pi].d<=ini)) aplica(pags[pi++]);
+      if(P<=0.005 && jp<=0.005){ quitado=true; break; }
+      atrasoBase=jp;
+      const j=r2(taxa*P); jp=r2(jp+j);
+      out.periodos.push({k,ini,fim:inicioPeriodo(e,k+1),base:P,juros:j,pago:0});
+      k++;
+    }
+    while(pi<pags.length) aplica(pags[pi++]);
+    if(P<=0.005 && jp<=0.005) quitado=true;
+    const ult=out.periodos[out.periodos.length-1];
+    let venc=quitado?null:(ult?ult.fim:inicioPeriodo(e,1)), jpShow=jp;
+    // venceu hoje e os juros já foram pagos: mostra o próximo período
+    if(!quitado && jp<=0.005 && venc && venc<=t){ venc=inicioPeriodo(e,out.periodos.length+1); jpShow=r2(taxa*P); }
+    out.principal=P; out.jurosAcumulado=jp; out.jurosPend=jpShow; out.saldo=r2(P+jpShow); out.venc=venc; out.pagoTotal=pagoTotal;
+    out.jurosAtrasados=quitado?0:atrasoBase; out.jurosPeriodo=ult?ult.juros:0;
+    out.proxJuros=r2(taxa*P);
+    out.estado = quitado ? 'done' : (out.jurosAtrasados>0.005 ? 'late' : (out.venc===t?'hoje':'ok'));
+    return out;
+  }
+  window.__testes = Object.assign(window.__testes||{}, {analisarEmp}); // usado pelos testes automáticos
+  function descEmp(e){
+    if(e.tipo==='livre') return `${fmt(e.valor)} emprestado em ${br(e.data)} · pagamento livre${e.prazo?' até '+br(e.prazo):''}`;
+    return `${fmt(e.valor)} em ${br(e.data)} · ${nx(e.taxa)}% ${e.periodo==='dias'?'a cada '+(e.dias||30)+' dias':'ao mês'}`;
+  }
+  function fraseEmp(e,a){
+    if(a.estado==='done') return 'Quitado';
+    if(e.tipo==='livre') return `Pagou ${fmt(a.pagoTotal)} de ${fmt(e.valor)}`+(a.estado==='late'?' · prazo venceu':'');
+    if(a.estado==='late') return `Juros atrasados: ${fmt(a.jurosAtrasados)}`;
+    if(a.estado==='hoje') return `Vence hoje · juros ${fmt(a.jurosPend)}`;
+    return `Vence ${diaSem(a.venc)} ${dm(a.venc)} · juros ${fmt(a.jurosPend)}`;
+  }
+  function msgEmp(e,a){
+    const n=e.nome.trim().split(/\s+/)[0];
+    if(a.estado==='done') return `Olá ${n}, tudo bem?`;
+    if(e.tipo==='livre') return `Olá ${n}, tudo bem? Passando para lembrar do empréstimo: até agora você pagou ${fmt(a.pagoTotal)} de ${fmt(e.valor)}. Falta ${fmt(a.saldo)}.${e.prazo?' O prazo combinado é '+br(e.prazo)+'.':''}`;
+    return `Olá ${n}, tudo bem? Passando para lembrar do empréstimo: o vencimento é dia ${br(a.venc)}. Para ficar em dia são ${fmt(a.jurosPend)} de juros. Para quitar tudo, ${fmt(a.saldo)}.`;
+  }
+  function renderEmprestimos(){
+    const box=$('#grupos'); box.innerHTML='';
+    const now=new Date(), mk=now.getFullYear()+'-'+pad(now.getMonth()+1);
+    const lst=emprestimos.map(e=>({e,a:analisarEmp(e)}));
+    const naRua=lst.reduce((s,x)=>s+(x.a.estado==='done'?0:x.a.principal),0), juros=lst.reduce((s,x)=>s+(x.a.jurosPend||0),0);
+    const recMes=emprestimos.reduce((s,e)=>s+(e.pagamentos||[]).filter(p=>String(p.d).slice(0,7)===mk).reduce((a,p)=>a+p.v,0),0);
+    $('#stripK').textContent='Emprestado na rua'; $('#stripV').textContent=fmt(naRua); $('#strip').hidden=true;
+    const temAtraso=lst.some(x=>x.a.estado==='late');
+    $('#heroStats').innerHTML=`<div class="chip${temAtraso?' warn':''}">Juros a receber<b>${fmt(juros)}</b></div><div class="chip">Recebido em ${['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][now.getMonth()]}<b>${fmt(recMes)}</b></div>`;
+    if(!ready){ box.innerHTML='<div class="empty">Carregando…</div>'; return; }
+    if(!lst.length){ box.innerHTML=`<div class="empty boasvindas"><span class="e">🤝</span><b>Nenhum empréstimo ainda</b><span>Toque em <strong>Adicionar</strong>, aqui embaixo, para registrar o primeiro empréstimo.</span></div>`; return; }
+    const q=norm($('#busca').value);
+    const fil=lst.filter(x=>!q||norm(x.e.nome).includes(q)||norm(x.e.obs).includes(q));
+    if(!fil.length){ box.innerHTML='<div class="empty">Nenhum nome encontrado.</div>'; return; }
+    [['late','Atrasados'],['hoje','Vencem hoje'],['ok','Em dia'],['done','Quitados']].forEach(([st,tit])=>{
+      const l=fil.filter(x=>x.a.estado===st).sort((x,y)=>x.e.nome.localeCompare(y.e.nome,'pt-BR')); if(!l.length) return;
+      const h=document.createElement('h3'); h.className=st; h.innerHTML=`${tit} <span class="cnt">${l.length}</span>`; box.appendChild(h);
+      const wrap=document.createElement('div'); wrap.className='names';
+      l.forEach(({e,a})=>{
+        const r=document.createElement('div'); r.className='row '+st; r.tabIndex=0; r.setAttribute('role','button');
+        const ini=e.nome.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+        r.innerHTML=`<span class="av" style="--h:${hue(e.nome)}">${esc(ini)}</span><span style="min-width:0"><span class="nm">${esc(e.nome)}</span><span class="st">${esc(fraseEmp(e,a))}</span>${a.estado!=='done'?`<span class="val">${fmt(a.saldo)} para quitar</span>`:''}</span><span class="amt">${e.telefone&&a.estado!=='done'?`<a class="wamini" href="https://wa.me/${telDig(e.telefone)}?text=${encodeURIComponent(msgEmp(e,a))}" target="_blank" rel="noopener" aria-label="WhatsApp de ${esc(e.nome)}">${WA}</a>`:''}<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span>`;
+        const abrir=()=>{ empId=e.id; go('emp'); };
+        r.addEventListener('click',ev=>{ if(ev.target.closest('.wamini')) return; abrir(); });
+        r.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); abrir(); } });
+        wrap.appendChild(r);
+      });
+      box.appendChild(wrap);
+    });
+  }
+  let empPrevValor='';
+  function renderEmp(){
+    const e=emprestimos.find(x=>x.id===empId);
+    if(!e){ if(Date.now()-esperaPessoa<4000){ setTimeout(()=>{ if(view==='emp') renderEmp(); },200); return; } go('lista'); return; }
+    const a=analisarEmp(e), t=today();
+    $('#eNome').textContent=e.nome; $('#eSub').textContent=descEmp(e);
+    const av=$('#eAv'); av.style.setProperty('--h',hue(e.nome)); av.textContent=e.nome.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const st=$('#eStatus'); st.className='status '+(a.estado==='hoje'?'ok':a.estado);
+    let txt;
+    if(a.estado==='done') txt='Empréstimo quitado.';
+    else if(e.tipo==='livre') txt=`Falta ${fmt(a.saldo)}. Já pagou ${fmt(a.pagoTotal)} de ${fmt(e.valor)}.`+(a.estado==='late'?` O prazo combinado (${br(e.prazo)}) já passou.`:'');
+    else if(a.estado==='late') txt=`Juros atrasados: ${fmt(a.jurosAtrasados)}. Até ${br(a.venc)}: ${fmt(a.jurosPend)} para ficar em dia, ou ${fmt(a.saldo)} para quitar.`;
+    else txt=`${a.estado==='hoje'?'Vence hoje':'Vence '+diaSem(a.venc)+', '+br(a.venc)}: ${fmt(a.jurosPend)} de juros para ficar em dia, ou ${fmt(a.saldo)} para quitar.`;
+    st.innerHTML=(a.estado==='late'?ICON_ALERT:ICON_OK)+'<span>'+esc(txt)+'</span>';
+    // contato
+    const cb=$('#eContato');
+    cb.innerHTML = e.telefone ? `<a class="wa" href="https://wa.me/${telDig(e.telefone)}?text=${encodeURIComponent(msgEmp(e,a))}" target="_blank" rel="noopener">${WA}Chamar no WhatsApp</a><div class="telrow"><span class="tn">${esc(telFmt(e.telefone))}</span></div>` : '';
+    // resumo
+    const facts = e.tipo==='livre'
+      ? [['Emprestado',fmt(e.valor)],['Já pagou',fmt(a.pagoTotal)],['Falta',fmt(a.saldo)],['Prazo',e.prazo?br(e.prazo):'Sem prazo']]
+      : [['Dívida atual',fmt(a.principal)],['Juros pendentes',fmt(a.jurosPend)],['Para quitar',fmt(a.saldo)],['Vencimento',a.venc?br(a.venc):'—']];
+    $('#eResumo').innerHTML=`<div class="it"><strong>Resumo</strong><span class="pg" style="background:none;padding:0;font-size:13px;color:var(--muted);font-weight:700">${e.tipo==='livre'?'Pagamento livre':nx(e.taxa)+'% '+(e.periodo==='dias'?'a cada '+(e.dias||30)+' dias':'ao mês')}</span></div>
+      <div class="prog" aria-hidden="true"><span style="width:${Math.min(100,Math.round((1-(a.principal/(e.valor||1)))*100))}%"></span></div>
+      <div class="facts">${facts.map(([k,v])=>`<div class="fact"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>
+      ${e.tipo!=='livre'&&a.estado!=='done'?`<p class="muted" style="margin:0;font-size:13.5px">Se pagar só os juros (${fmt(a.jurosPend)}), a dívida continua ${fmt(a.principal)} e o próximo período cobra ${fmt(a.proxJuros)} de juros.</p>`:''}
+      ${e.obs?`<div class="obs">${esc(e.obs)}</div>`:''}`;
+    // registrar pagamento
+    const pb=$('#ePagar');
+    if(a.estado==='done'){ pb.hidden=true; } else {
+      pb.hidden=false;
+      pb.innerHTML=`<div class="it"><strong>Registrar pagamento</strong></div>
+        ${e.tipo!=='livre'?`<div class="chips2"><button type="button" class="btn small" data-fill="${a.jurosPend}">Só os juros · ${fmt(a.jurosPend)}</button><button type="button" class="btn small" data-fill="${a.saldo}">Quitou tudo · ${fmt(a.saldo)}</button></div>`:`<div class="chips2"><button type="button" class="btn small" data-fill="${a.saldo}">Quitou tudo · ${fmt(a.saldo)}</button></div>`}
+        <div class="two"><div class="field"><label for="epValor">Valor recebido (R$)</label><input id="epValor" inputmode="decimal" placeholder="0,00" value="${esc(empPrevValor)}"></div><div class="field"><label for="epData">Data</label><input id="epData" type="date" value="${t}"></div></div>
+        <div class="field"><label for="epNota">Observação (opcional)</label><input id="epNota" maxlength="120" placeholder="Ex.: Pix, dinheiro"></div>
+        <div class="aloc" id="epPrev" hidden></div>
+        <button type="button" class="btn primary" id="epSalvar">Registrar pagamento</button>`;
+      const prev=()=>{
+        const v=parseValor(pb.querySelector('#epValor').value), d=pb.querySelector('#epData').value||t; empPrevValor=pb.querySelector('#epValor').value;
+        const box=pb.querySelector('#epPrev'); if(!(v>0)){ box.hidden=true; return; }
+        const s2=analisarEmp(e,{d,v}), x=s2.pags.find(p=>p.extra)||{juros:0,principal:0,sobra:0};
+        let h = e.tipo==='livre' ? `Abate <b>${fmt(x.principal)}</b>. Vai faltar <b>${fmt(s2.saldo)}</b>.` :
+          `<b>${fmt(x.juros)}</b> pagam juros e <b>${fmt(x.principal)}</b> abatem a dívida.<br>Dívida fica em <b>${fmt(s2.principal)}</b>`+(s2.saldo>0.005?`; no próximo período os juros serão <b>${fmt(s2.proxJuros)}</b>.`:' — <b>quitado!</b>');
+        if(x.sobra>0.005) h+=`<br>Passou ${fmt(x.sobra)} do total devido.`;
+        box.innerHTML=h; box.hidden=false;
+      };
+      pb.querySelector('#epValor').addEventListener('input',prev); pb.querySelector('#epData').addEventListener('input',prev);
+      pb.querySelectorAll('[data-fill]').forEach(b=>b.addEventListener('click',()=>{ pb.querySelector('#epValor').value=num(+b.dataset.fill); prev(); }));
+      prev();
+      pb.querySelector('#epSalvar').addEventListener('click',async()=>{
+        const v=r2(parseValor(pb.querySelector('#epValor').value)), d=pb.querySelector('#epData').value||t, nota=pb.querySelector('#epNota').value.trim();
+        if(!(v>0)){ toast('Informe o valor recebido.'); return; }
+        const antes=(e.pagamentos||[]).slice(), novos=antes.concat([{d,v,nota}]);
+        empPrevValor='';
+        await salva(db.doc('emprestimos/'+e.id).update({pagamentos:novos,atualizadoEm:new Date().toISOString()}));
+        if(navigator.vibrate) navigator.vibrate(30);
+        toast(`Recebido ${fmt(v)} de ${e.nome.split(' ')[0]}`,'Desfazer',()=>salva(db.doc('emprestimos/'+e.id).update({pagamentos:antes})).then(()=>toast('Desfeito')));
+      });
+    }
+    // histórico e extrato
+    const hb=$('#eHist'); const ps=a.pags.slice().reverse();
+    const rec=p=>`Olá ${e.nome.split(' ')[0]}! Confirmo que recebi ${fmt(p.v)} em ${br(p.d)}${e.tipo!=='livre'?` (${fmt(p.juros)} de juros e ${fmt(p.principal)} da dívida)`:''}. ${p.saldoDepois>0.005?'Falta '+fmt(p.saldoDepois)+'.':'Empréstimo quitado.'} Obrigado!`;
+    hb.innerHTML=`<div class="it"><strong>Pagamentos</strong><span class="muted" style="font-size:13px;font-weight:700">${ps.length?fmt(a.pagoTotal)+' no total':''}</span></div>
+      ${ps.length?ps.map(p=>`<div class="pg"><span class="t">${br(p.d)} · ${fmt(p.v)}</span><span style="display:flex;gap:8px;align-items:center">${e.telefone?`<a class="rlink" href="https://wa.me/${telDig(e.telefone)}?text=${encodeURIComponent(rec(p))}" target="_blank" rel="noopener">Recibo</a>`:''}<button type="button" class="x" data-del="${p.i}" aria-label="Apagar pagamento">×</button></span><small>${e.tipo!=='livre'?`Juros ${fmt(p.juros)} · abateu ${fmt(p.principal)} · `:''}ficou devendo ${fmt(p.saldoDepois)}${p.nota?' · '+esc(p.nota):''}</small></div>`).join(''):'<p class="muted" style="margin:0;font-size:14px">Nenhum pagamento registrado ainda.</p>'}
+      ${e.tipo!=='livre'&&a.periodos.length?`<details class="hist"><summary>Extrato por período (${a.periodos.length})</summary><div class="ext">${a.periodos.slice().reverse().map(x=>`<div class="l ${x.pago>=x.juros-0.005?'pago':(x.fim<=t?'falta':'')}"><span>${dm(x.ini)} a ${dm(x.fim)} · ${nx(e.taxa)}% de ${fmt(x.base)}</span><b>${fmt(x.juros)}</b></div>`).join('')}</div></details>`:''}`;
+    hb.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
+      const i=+b.dataset.del, antes=(e.pagamentos||[]).slice(), novos=antes.filter((_,ix)=>ix!==i);
+      await salva(db.doc('emprestimos/'+e.id).update({pagamentos:novos}));
+      toast('Pagamento apagado','Desfazer',()=>salva(db.doc('emprestimos/'+e.id).update({pagamentos:antes})).then(()=>toast('Desfeito')));
+    }));
+    // ações
+    const ac=$('#eAcoes');
+    ac.innerHTML=`<button type="button" class="btn small" data-a="edit">Editar empréstimo</button><button type="button" class="btn small danger" data-a="del">Apagar</button>`;
+    ac.onclick=ev=>{ const b=ev.target.closest('button'); if(!b) return;
+      if(b.dataset.a==='edit') editarEmp(e);
+      if(b.dataset.a==='del') ac.innerHTML='<div class="confirm">Apagar este empréstimo de vez? <button class="btn small danger" data-a="yes">Sim, apagar</button><button class="btn small" data-a="no">Não</button></div>';
+      if(b.dataset.a==='no') renderEmp();
+      if(b.dataset.a==='yes'){ const {id,...copia}=e; salva(db.doc('emprestimos/'+id).delete()); go('lista'); toast('Empréstimo apagado','Desfazer',()=>salva(db.doc('emprestimos/'+id).set(copia)).then(()=>toast('Restaurado'))); }
+    };
+  }
+  $('#empVoltar').addEventListener('click',()=>{ empPrevValor=''; go('lista'); });
+  // ---------- formulário de empréstimo ----------
+  const fe=$('#formEmp');
+  function empFormUI(){
+    const juros=fe.enTipo.value==='juros'; $('#enJurosBox').hidden=!juros; $('#enLivreBox').hidden=juros;
+    $('#enDiasBox').hidden=fe.enPer.value!=='dias';
+    const v=parseValor($('#enValor').value), tx=parseValor($('#enTaxa').value);
+    if(juros && v>0 && tx>0){
+      const fake={valor:v,taxa:tx,tipo:'juros',data:$('#enData').value||today(),periodo:fe.enPer.value,dias:parseInt($('#enDias').value)||30};
+      const venc=inicioPeriodo(fake,1), j=r2(v*tx/100);
+      $('#enPrev').innerHTML=`Em <b>${br(venc)}</b>: <b>${fmt(v+j)}</b> para quitar, ou <b>${fmt(j)}</b> só de juros.<br>Se pagar só os juros, no período seguinte deve ${fmt(v+j)} de novo.`;
+    } else $('#enPrev').innerHTML='';
+  }
+  fe.addEventListener('input',empFormUI); fe.addEventListener('change',empFormUI);
+  function resetEmpForm(){
+    empEditId=null; fe.reset(); $('#enData').value=today(); $('#enDias').value=30;
+    $('#empFormTit').textContent='Novo empréstimo'; $('#enSalvar').textContent='Salvar empréstimo'; $('#enCancelar').hidden=true; empFormUI();
+  }
+  function editarEmp(e){
+    resetEmpForm(); empEditId=e.id;
+    $('#enNome').value=e.nome; $('#enTel').value=e.telefone?telFmt(e.telefone):''; $('#enValor').value=num(e.valor); $('#enData').value=e.data;
+    fe.enTipo.value=e.tipo||'juros'; $('#enTaxa').value=e.taxa?nx(e.taxa):''; fe.enPer.value=e.periodo||'mensal'; $('#enDias').value=e.dias||30; $('#enPrazo').value=e.prazo||''; $('#enObs').value=e.obs||'';
+    $('#empFormTit').textContent='Editar empréstimo'; $('#enSalvar').textContent='Salvar alterações'; $('#enCancelar').hidden=false; empFormUI(); go('novoEmp');
+  }
+  $('#enCancelar').addEventListener('click',()=>{ go(empEditId?'emp':'lista'); });
+  fe.addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    if(!db){ toast('Sem conexão. Tente de novo em instantes.'); return; }
+    const nome=$('#enNome').value.trim().replace(/\s+/g,' '), valor=r2(parseValor($('#enValor').value)), tipo=fe.enTipo.value, taxa=parseValor($('#enTaxa').value);
+    if(!nome){ toast('Informe o nome.'); return; }
+    if(!(valor>0)){ toast('Informe o valor emprestado.'); $('#enValor').focus(); return; }
+    if(tipo==='juros' && !(taxa>0)){ toast('Informe os juros (%) ou escolha “Pagamento livre”.'); $('#enTaxa').focus(); return; }
+    const antigo=empEditId?emprestimos.find(x=>x.id===empEditId):null;
+    const doc={nome,telefone:$('#enTel').value.replace(/\D/g,''),valor,data:$('#enData').value||today(),tipo,
+      taxa:tipo==='juros'?taxa:0,periodo:fe.enPer.value,dias:parseInt($('#enDias').value)||30,prazo:tipo==='livre'?($('#enPrazo').value||null):null,
+      obs:$('#enObs').value.trim(),pagamentos:antigo?(antigo.pagamentos||[]):[],criadoEm:antigo?antigo.criadoEm:new Date().toISOString(),atualizadoEm:new Date().toISOString()};
+    const ref=empEditId?db.doc('emprestimos/'+empEditId):db.collection('emprestimos').doc();
+    $('#enSalvar').disabled=true;
+    await salva(ref.set(doc));
+    $('#enSalvar').disabled=false;
+    toast(empEditId?'Empréstimo atualizado':'Empréstimo registrado');
+    empId=ref.id; esperaPessoa=Date.now(); setTipo('emprestimo'); go('emp');
+  });
+
   // ---------- formulário ----------
   const form=$('#form');
   const tipoAtual=()=>form.tipo.value;
@@ -1234,6 +1507,8 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   }
 
   function render(){
+    if(view==='lista' && tipoLista==='emprestimo'){ renderEmprestimos(); return; }
+    if(view==='emp'){ renderEmp(); return; }
     if(view==='lista') renderLista();
     if(view==='pessoa') renderPessoa();
     if(view==='meses') renderMeses();
@@ -1319,7 +1594,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     $('#coresFechar').addEventListener('click',()=>{ $('#sheetCores').hidden=true; });
     $('#sheetCores').addEventListener('click',e=>{ if(e.target.id==='sheetCores') $('#sheetCores').hidden=true; });
     // aviso de novidades: aparece uma vez a cada versão nova
-    const VERSAO='2026-11-12d';
+    const VERSAO='2026-11-12e';
     if(!lsGet('cc_uid')) lsSet('cc_novidades',VERSAO); // quem está chegando agora não precisa do aviso
     if(lsGet('cc_novidades')!==VERSAO) $('#novidades').hidden=false;
     $('#novFechar').addEventListener('click',()=>{ $('#novidades').hidden=true; lsSet('cc_novidades',VERSAO); });
@@ -1421,9 +1696,9 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   if(instalado()){ $('#instInfo').textContent='O app já está instalado neste aparelho.'; $('#btnInstalar').hidden=true; $('#instLoginBox').hidden=true; }
 
   // ---------- sessão: nuvem (Firebase) ou só neste aparelho ----------
-  let unsub=null, unsubPrefs=null, unsubPessoas=null, modoLocal=false;
+  let unsub=null, unsubPrefs=null, unsubPessoas=null, unsubEmp=null, modoLocal=false;
   function encerrarSessao(){
-    if(unsub){ unsub(); unsub=null; } if(unsubPessoas){ unsubPessoas(); unsubPessoas=null; } if(unsubPrefs){ unsubPrefs(); unsubPrefs=null; }
+    if(unsub){ unsub(); unsub=null; } if(unsubPessoas){ unsubPessoas(); unsubPessoas=null; } if(unsubPrefs){ unsubPrefs(); unsubPrefs=null; } if(unsubEmp){ unsubEmp(); unsubEmp=null; } emprestimos=[];
     pessoasInfo={}; contas=[]; ready=false; prefsDados=null; contasServidor=false; regraCfg=null; db=null; $('#migrar').hidden=true;
   }
   function iniciarSessao(uid,rotulo,dbImpl,local){
@@ -1441,6 +1716,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     atualizaPinInfo();
     db=dbImpl;
     try{ unsubPrefs=db.doc('config/prefs').onSnapshot(d=>{ const dd=(d.exists&&d.data())||{}; const t=dd.tema||'azul'; if(t!==lsGet('cc_tema')) aplicaTema(t,false); regraCfg=dd.regra&&dd.regra.limite?dd.regra:null; prefsDados=dd; mostraRegra(); if(!local) migraRegraAntiga(); },()=>{}); }catch(e){}
+    try{ unsubEmp=db.collection('emprestimos').onSnapshot(snap=>{ emprestimos=snap.docs.map(d=>({id:d.id,...d.data()})).filter(e=>e.valor>0&&e.data&&e.nome); render(); },()=>{}); }catch(e){}
     try{ unsubPessoas=db.collection('pessoas').onSnapshot(snap=>{ const m={}; snap.docs.forEach(d=>{ m[d.id]=d.data(); }); pessoasInfo=m; render(); },()=>{}); }catch(e){}
     const timer=setTimeout(()=>{ if(!ready){ syncEl.textContent='Sem conexão…'; } },10000);
     syncEl.textContent='Carregando…';
@@ -1503,7 +1779,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   }
   $('#btnMigrar').addEventListener('click',async e=>{
     const loc=dadosLocais(); e.currentTarget.disabled=true; let n=0;
-    for(const [k,v] of Object.entries(loc)){ if(!/^(contas|pessoas|config)\/[^/]+$/.test(k)||!v) continue; await salva(db.doc(k).set(v,{merge:true})); if(k.startsWith('contas/')) n++; }
+    for(const [k,v] of Object.entries(loc)){ if(!/^(contas|pessoas|config|emprestimos)\/[^/]+$/.test(k)||!v) continue; await salva(db.doc(k).set(v,{merge:true})); if(k.startsWith('contas/')) n++; }
     lsSet('cc_migrado:'+uidAtual,'sim'); $('#migrar').hidden=true; e.currentTarget.disabled=false;
     toast(`${n} ${n>1?'compras enviadas':'compra enviada'} para a nuvem`);
   });
@@ -1566,7 +1842,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   }
     // backup
     $('#btnExport').addEventListener('click',()=>{
-      const data={app:'minhas-contas',versao:2,exportadoEm:new Date().toISOString(),contas,pessoas:pessoasInfo};
+      const data={app:'minhas-contas',versao:3,exportadoEm:new Date().toISOString(),contas,pessoas:pessoasInfo,emprestimos};
       const blob=new Blob([JSON.stringify(data,null,1)],{type:'application/json'});
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='caderneta-backup-'+today()+'.json';
       document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000);
@@ -1606,10 +1882,11 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       try{
         const data=JSON.parse(await f.text()); const lista=Array.isArray(data)?data:(data.contas||[]);
         const validas=lista.filter(c=>c&&c.nome&&c.parcelas>0&&c.dataPrimeiroPagamento);
-        if(!validas.length){ msg.textContent='Esse arquivo não tem contas válidas.'; return; }
+        if(!validas.length && !(data&&Array.isArray(data.emprestimos)&&data.emprestimos.length)){ msg.textContent='Esse arquivo não tem contas válidas.'; return; }
         msg.textContent='Importando '+validas.length+' contas…';
         let n=0;
         for(const c of validas){ const {id,...rest}=c; const ref=id?db.doc('contas/'+id):db.collection('contas').doc(); await salva(ref.set(JSON.parse(JSON.stringify(rest)))); n++; }
+        if(data&&Array.isArray(data.emprestimos)){ for(const e of data.emprestimos){ if(!e||!e.nome||!(e.valor>0)) continue; const {id,...rest}=e; await salva((id?db.doc('emprestimos/'+id):db.collection('emprestimos').doc()).set(JSON.parse(JSON.stringify(rest)))); } }
         if(data&&data.pessoas&&typeof data.pessoas==='object'){ for(const [k,v] of Object.entries(data.pessoas)){ if(/^[a-z0-9-]{1,150}$/.test(k)&&v&&typeof v==='object') await salva(db.doc('pessoas/'+k).set(JSON.parse(JSON.stringify(v)),{merge:true})); } }
         msg.textContent=n+' contas importadas.'; toast('Backup importado'); go('lista');
       }catch(err){ msg.textContent='Não foi possível ler o arquivo. Confira se é o backup certo.'; }
