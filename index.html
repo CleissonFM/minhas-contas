@@ -309,6 +309,11 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
 .login .logo{width:64px;height:64px;border-radius:20px}
 .login h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:8px 0 0}
 .login p{margin:0;color:var(--muted)}
+.passos{display:flex;flex-direction:column;gap:10px}
+.passo{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:center;background:var(--bg);border-radius:14px;padding:12px}
+.passo .n{width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800}
+.passo span{font-size:15px;line-height:1.4}
+.ic-i{width:22px;height:22px;vertical-align:-5px;color:#0a7aff;margin:0 2px}
 .escolha{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);background:var(--surface);border-radius:20px;padding:16px;cursor:pointer;color:var(--ink);box-shadow:var(--shadow)}
 .escolha:active{transform:scale(.99)}
 .escolha .e{font-size:30px;line-height:1}
@@ -349,6 +354,14 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       <li><b>Senha</b>, <b>calendário</b> e <b>planilha</b> em “Conta”.</li>
     </ul>
     <div class="temas"></div>
+  </div>
+  <div class="sheet" id="sheetInstalar" hidden>
+    <div class="sheet-box" role="dialog" aria-label="Colocar o app na Tela de Início">
+      <div class="nh"><strong>Coloque o app na Tela de Início</strong><button type="button" class="x" id="instFechar" aria-label="Fechar">×</button></div>
+      <p class="muted" style="margin:0;font-size:14px">Assim ele fica com ícone próprio, abre em tela cheia e funciona sem internet, como um aplicativo.</p>
+      <div class="passos" id="instSheetPassos"></div>
+      <button type="button" class="btn primary" id="instEntendi">Entendi</button>
+    </div>
   </div>
   <div class="sheet" id="sheetCores" hidden>
     <div class="sheet-box" role="dialog" aria-label="Cores do app">
@@ -1299,13 +1312,34 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     const ua=navigator.userAgent||'', ios=/iPhone|iPad|iPod/.test(ua)||(/Mac/.test(ua)&&'ontouchend' in document);
     const inApp=/FBAN|FBAV|Instagram|WhatsApp|Line\//i.test(ua);
     if(inApp) return '<b>Abra este link no navegador</b> (Safari no iPhone, Chrome no Android). Toque nos três pontinhos ou no ícone do navegador e escolha “Abrir no navegador”. Depois toque de novo em “Instalar o app”.';
+    if(ios && arguments[0]==='passos') return [
+      'Toque no botão <b>Compartilhar</b> <svg class="ic-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg> na barra do Safari. <br><small class="muted">No iPhone mais novo, toque antes nos três pontinhos <svg class="ic-i" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg> e depois em <b>Compartilhar</b>.</small>',
+      'Role a lista para baixo e toque em <b>“Adicionar à Tela de Início”</b> <svg class="ic-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>.',
+      'Toque em <b>Adicionar</b>, no canto de cima. O ícone verde da <b>Caderneta</b> aparece junto dos seus apps.',
+      '<b>Abra pelo ícone novo e use sempre por ele.</b> No iPhone, o que você cadastrar no app do ícone fica guardado nele (separado do Safari).'
+    ].map((t,i)=>`<div class="passo"><span class="n">${i+1}</span><span>${t}</span></div>`).join('');
+    if(!ios && arguments[0]==='passos') return [
+      'Toque nos <b>três pontinhos</b> <svg class="ic-i" viewBox="0 0 24 24" fill="currentColor" style="transform:rotate(90deg)" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg> no canto de cima do Chrome.',
+      'Toque em <b>“Instalar app”</b> ou <b>“Adicionar à tela inicial”</b>.',
+      'Confirme em <b>Instalar</b>. O ícone da <b>Caderneta</b> aparece junto dos seus apps.'
+    ].map((t,i)=>`<div class="passo"><span class="n">${i+1}</span><span>${t}</span></div>`).join('');
     if(ios) return '<b>No iPhone (Safari):</b><br>1. Toque no botão <b>Compartilhar</b> (quadrado com seta para cima).<br>2. Role e toque em <b>“Adicionar à Tela de Início”</b>.<br>3. Toque em <b>Adicionar</b>.<br>O ícone verde da Caderneta aparece na tela do celular.';
     return '<b>No Android (Chrome):</b><br>1. Toque nos <b>três pontinhos</b> no canto de cima.<br>2. Toque em <b>“Instalar app”</b> ou <b>“Adicionar à tela inicial”</b>.<br>3. Confirme em <b>Instalar</b>.';
   }
+  async function ofereceInstalar(){
+    if(instalado()) return;
+    if(promptInstalar){ try{ promptInstalar.prompt(); await promptInstalar.userChoice; }catch(e){} promptInstalar=null; return; }
+    const ua=navigator.userAgent||'';
+    if(/FBAN|FBAV|Instagram|WhatsApp|Line\//i.test(ua)){ $('#instSheetPassos').innerHTML='<div class="obs">'+passosInstalar()+'</div>'; }
+    else $('#instSheetPassos').innerHTML=passosInstalar('passos');
+    $('#sheetInstalar').hidden=false;
+  }
+  $('#instFechar').addEventListener('click',()=>{ $('#sheetInstalar').hidden=true; });
+  $('#instEntendi').addEventListener('click',()=>{ $('#sheetInstalar').hidden=true; });
   $('#btnInstalar').addEventListener('click',async()=>{
     if(instalado()){ toast('O app já está instalado neste aparelho'); return; }
     if(promptInstalar){ promptInstalar.prompt(); try{ await promptInstalar.userChoice; }catch(e){} promptInstalar=null; return; }
-    const b=$('#instPassos'); b.innerHTML=passosInstalar(); b.hidden=false;
+    ofereceInstalar();
   });
   $('#instLogin').innerHTML=passosInstalar();
   if(instalado()){ $('#instInfo').textContent='O app já está instalado neste aparelho.'; $('#btnInstalar').hidden=true; $('#instLoginBox').hidden=true; }
@@ -1368,7 +1402,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     try{ if(navigator.storage&&navigator.storage.persist) navigator.storage.persist(); }catch(e){}
     iniciarSessao('local','Só neste aparelho (sem conta, funciona offline)',bancoLocal,true);
   }
-  $('#btnLocal').addEventListener('click',()=>{ lsSet('cc_escolha','local'); iniciarLocal(); });
+  $('#btnLocal').addEventListener('click',()=>{ lsSet('cc_escolha','local'); iniciarLocal(); ofereceInstalar(); });
   function mostraPasso(online){ $('#passoEscolha').hidden=online; $('#passoOnline').hidden=!online; mostraErro(''); }
   function mostraLogin(){ $('#login').hidden=false; mostraPasso(lsGet('cc_escolha')==='online'); }
   $('#btnOnline').addEventListener('click',()=>{ lsSet('cc_escolha','online'); mostraPasso(true); });
