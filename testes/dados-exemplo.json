@@ -1,0 +1,4 @@
+{"app":"minhas-contas","versao":1,"contas":[
+ {"id":"ex1","tipo":"receber","nome":"Cliente Exemplo","item":"iPhone 15","telefone":"11999990000","dataNegociacao":"2026-10-01","dataPrimeiroPagamento":"2026-11-01","frequencia":"mensal","parcelas":4,"valorBem":1000,"regra":"auto","multiplicador":2,"valorParcela":500,"valorTotal":2000,"pagas":[true,false,false,false],"criadoEm":"2026-10-01T12:00:00Z"},
+ {"id":"ex2","tipo":"receber","nome":"Outra Pessoa","item":"AirPods","dataNegociacao":"2026-11-01","dataPrimeiroPagamento":"2026-11-07","frequencia":"semanal","parcelas":6,"valorBem":300,"regra":"manual","multiplicador":1,"valorParcela":100,"valorTotal":600,"pagas":[false,false,false,false,false,false],"criadoEm":"2026-11-01T12:00:00Z"}
+]}

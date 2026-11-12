@@ -202,6 +202,11 @@ form{display:flex;flex-direction:column;gap:14px;background:var(--surface);borde
 label{font-size:13.5px;font-weight:700;color:var(--muted)}
 .seg label{color:var(--muted);font-size:15px}
 .calc{background:var(--mint);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.seg3{grid-template-columns:repeat(3,1fr)}
+.seg3 label{font-size:14px;padding:10px 4px}
+.calc > label{color:var(--accent)}
+.calc .mult{font-size:14.5px!important;color:var(--ink)!important;background:var(--surface);border-radius:12px;padding:10px 12px;line-height:1.4}
+.calc .mult:empty{display:none}
 .calc .mult{font-size:13.5px;font-weight:700;color:var(--accent)}
 .calc input{font-weight:800;font-size:18px;border-color:transparent}
 .calc label{color:var(--accent)}
@@ -460,21 +465,28 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
         </div>
       </div>
       <div class="field" id="valorWrap">
-        <label for="valor">Valor do bem (R$)</label>
-        <input id="valor" type="text" inputmode="decimal" placeholder="0,00">
+        <label for="valor">Valor do item (R$)</label>
+        <input id="valor" type="text" inputmode="decimal" placeholder="Ex.: 1.000,00">
       </div>
       <div class="calc">
-        <div class="mult" id="cMult">Regra automática</div>
+        <label>Acréscimo nesta negociação</label>
+        <div class="seg seg3">
+          <label><input type="radio" name="acTipo" value="x" checked> × Vezes</label>
+          <label><input type="radio" name="acTipo" value="%"> % Porcento</label>
+          <label><input type="radio" name="acTipo" value="0"> Sem</label>
+        </div>
+        <div class="field" id="acWrap"><label for="acValor" id="acLbl">Multiplicar o valor por</label><input id="acValor" type="text" inputmode="decimal" placeholder="Ex.: 1,5"></div>
+        <div class="mult" id="cMult"></div>
         <div class="two">
           <div class="field"><label for="cTotalIn">Total (R$)</label><input id="cTotalIn" type="text" inputmode="decimal" placeholder="0,00"></div>
           <div class="field"><label for="cParcIn">Cada parcela (R$)</label><input id="cParcIn" type="text" inputmode="decimal" placeholder="0,00"></div>
         </div>
-        <p class="hint" id="calcHint">Calculado sozinho. Pode alterar se quiser.</p>
+        <p class="hint" id="calcHint">Calculado sozinho. Se preferir, digite direto o valor de cada parcela.</p>
         <button type="button" class="btn small" id="btnRecalc" hidden>Voltar ao cálculo automático</button>
       </div>
       <details class="more" id="mais">
         <summary>Mais opções</summary>
-        <div class="field">
+        <div class="field" hidden>
           <label for="regra">Regra de acréscimo</label>
           <select id="regra">
             <option value="auto" id="optAuto">Automática (até 3x = ×1,7 · mais de 3x = ×2)</option>
@@ -536,8 +548,8 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
       <p class="muted" id="importMsg" style="font-size:14px"></p>
     </div>
     <div class="card">
-      <p><strong>Minha regra de acréscimo</strong></p>
-      <p class="muted" style="font-size:14px">Cada pessoa faz a própria cotação. A regra é usada no cálculo automático das vendas novas e não muda as já cadastradas.</p>
+      <p><strong>Acréscimo sugerido (opcional)</strong></p>
+      <p class="muted" style="font-size:14px">O acréscimo é escolhido em cada negociação, na hora de adicionar. Aqui você pode deixar uma sugestão que já vem preenchida, por número de parcelas. Pode mudar em cada venda.</p>
       <p style="font-size:14px;font-weight:600" id="rgInfo"></p>
       <div class="two">
         <div class="field"><label for="rgLimite">Até quantas parcelas</label><input id="rgLimite" type="number" inputmode="numeric" min="1" max="120" placeholder="Ex.: 3"></div>
@@ -1042,36 +1054,52 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
   // ---------- formulário ----------
   const form=$('#form');
   const tipoAtual=()=>form.tipo.value;
-  function atualizarCalc(){
+  // acréscimo escolhido em cada negociação: vezes (×), porcentagem (%) ou sem
+  let acAuto=true, digitou='';
+  function fatorAcrescimo(){ const t=form.acTipo.value, v=parseValor($('#acValor').value); if(t==='0') return 1; if(t==='%') return 1+(v||0)/100; return v>0?v:1; }
+  function sugereAcrescimo(){
+    if(!acAuto) return;
     const p=Math.max(1,parseInt($('#parcelas').value)||1);
-    const regra=$('#regra').value, manual=regra==='manual';
-    $('#valorWrap').hidden=manual;
-    const m=multiplicador(p,regra);
-    $('#cMult').textContent = manual ? 'Digite o valor da parcela ou o total.' : (regra==='nenhuma'||!regraCfg) ? (regraCfg?'Sem acréscimo (×1)':'Sem acréscimo. Para calcular sozinho, defina sua regra em “Conta”.') : `Regra: ${p>regraCfg.limite?`mais de ${regraCfg.limite}x → ×${nx(regraCfg.acima)}`:`até ${regraCfg.limite}x → ×${nx(regraCfg.ate)}`}`;
-    if(manual){ $('#btnRecalc').hidden=true; $('#calcHint').textContent='Um calcula o outro.'; }
-    else if(!calcManual){ const tot=parseValor($('#valor').value)*m; $('#cTotalIn').value=num(tot); $('#cParcIn').value=num(tot/p); $('#btnRecalc').hidden=true; $('#calcHint').textContent='Calculado sozinho. Pode alterar se quiser.'; }
-    else { $('#cParcIn').value=num(parseValor($('#cTotalIn').value)/p); $('#btnRecalc').hidden=false; $('#calcHint').textContent='Valor alterado por você.'; }
+    if(regraCfg && tipoAtual()==='receber'){ form.acTipo.value='x'; $('#acValor').value=nx(p>regraCfg.limite?regraCfg.acima:regraCfg.ate); }
+    else { form.acTipo.value='0'; $('#acValor').value=''; }
+  }
+  function atualizarCalc(){
+    const p=Math.max(1,parseInt($('#parcelas').value)||1), v=parseValor($('#valor').value), t=form.acTipo.value;
+    $('#acWrap').hidden = t==='0';
+    $('#acLbl').textContent = t==='%' ? 'Acréscimo (%)' : 'Multiplicar o valor por';
+    $('#acValor').placeholder = t==='%' ? 'Ex.: 50' : 'Ex.: 1,5';
+    if(!calcManual){ if(v>0){ const tot=v*fatorAcrescimo(); $('#cTotalIn').value=num(tot); $('#cParcIn').value=num(tot/p); } }
+    else if(digitou==='parc'){ $('#cTotalIn').value=num(parseValor($('#cParcIn').value)*p); }
+    else { $('#cParcIn').value=num(parseValor($('#cTotalIn').value)/p); }
+    const tot=parseValor($('#cTotalIn').value);
+    let txt='';
+    if(v>0 && tot>0){ const f=tot/v, pct=Math.round((f-1)*1000)/10; txt=`Item ${fmt(v)} → total ${fmt(tot)}${Math.abs(f-1)>0.0005?` (${pct>0?'+':''}${String(pct).replace('.',',')}% · ×${nx(Math.round(f*100)/100)})`:' (sem acréscimo)'}<br><b>${p}x de ${fmt(tot/p)}</b>`; }
+    else if(tot>0) txt=`<b>${p}x de ${fmt(tot/p)}</b> = total ${fmt(tot)}`;
+    else txt='Informe o valor do item, ou digite direto o valor de cada parcela.';
+    $('#cMult').innerHTML=txt;
+    $('#calcHint').textContent = calcManual ? 'Valor digitado por você.' : 'Calculado sozinho. Se preferir, digite direto o valor de cada parcela.';
+    $('#btnRecalc').hidden = !(calcManual && v>0);
     $('#nomeLbl').textContent = tipoAtual()==='pagar' ? 'Para quem eu devo' : 'Nome de quem me deve';
   }
   let primAuto=true;
   function sugerePrim(){ if(!primAuto) return; const base=parseISO($('#dataNeg').value||today()); const semanal=form.freq.value==='semanal'; $('#dataPrim').value=iso(semanal?new Date(base.getFullYear(),base.getMonth(),base.getDate()+7):addMonths(base,1)); }
   form.addEventListener('change',e=>{ if(e.target.name==='freq'||e.target.id==='dataNeg') sugerePrim(); if(e.target.id==='dataPrim') primAuto=false; });
-  function onTipoChange(){ $('#regra').value = (tipoAtual()==='pagar'||!regraCfg) ? 'nenhuma' : 'auto'; calcManual=false; atualizarCalc(); }
+  function onTipoChange(){ acAuto=true; sugereAcrescimo(); calcManual=false; atualizarCalc(); }
   form.addEventListener('input',e=>{
     const id=e.target.id, p=Math.max(1,parseInt($('#parcelas').value)||1);
     if(e.target.name==='tipo') return onTipoChange();
-    if(id==='cTotalIn'){ if($('#regra').value!=='manual') calcManual=true; $('#cParcIn').value=num(parseValor(e.target.value)/p); marcaManual(); return; }
-    if(id==='cParcIn'){ if($('#regra').value!=='manual') calcManual=true; $('#cTotalIn').value=num(parseValor(e.target.value)*p); marcaManual(); return; }
-    if(id==='parcelas' && $('#regra').value==='manual'){ $('#cTotalIn').value=num(parseValor($('#cParcIn').value)*p); }
+    if(id==='cTotalIn'){ calcManual=true; digitou='total'; $('#cParcIn').value=num(parseValor(e.target.value)/p); atualizarCalc(); return; }
+    if(id==='cParcIn'){ calcManual=true; digitou='parc'; $('#cTotalIn').value=num(parseValor(e.target.value)*p); atualizarCalc(); return; }
+    if(e.target.name==='acTipo'||id==='acValor'){ acAuto=false; calcManual=false; }
+    if(id==='parcelas') sugereAcrescimo();
     atualizarCalc();
   });
-  function marcaManual(){ if($('#regra').value!=='manual'){ $('#btnRecalc').hidden=false; $('#calcHint').textContent='Valor alterado por você.'; } }
   $('#btnRecalc').addEventListener('click',()=>{ calcManual=false; atualizarCalc(); });
   function resetForm(){
     editId=null; form.reset(); $('#mais').open=false;
     $('#dataNeg').value=today(); primAuto=true; sugerePrim();
     $('#formTitle').textContent='Adicionar pessoa'; $('#btnSalvar').textContent='Salvar'; $('#btnCancelar').hidden=true;
-    $('#regra').value=regraCfg?'auto':'nenhuma'; calcManual=false; atualizarCalc();
+    calcManual=false; digitou=''; acAuto=true; sugereAcrescimo(); atualizarCalc();
     const dl=$('#nomesList'); dl.innerHTML=''; [...new Set(contas.map(c=>c.nome))].sort().forEach(n=>{ const o=document.createElement('option'); o.value=n; dl.appendChild(o); });
   }
   $('#btnCancelar').addEventListener('click',()=>{ resetForm(); go(pessoaKey?'pessoa':'lista'); });
@@ -1080,30 +1108,38 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     form.tipo.value=c.tipo; $('#nome').value=c.nome; $('#item').value=c.item||''; $('#tel').value=c.telefone?telFmt(c.telefone):'';
     $('#dataNeg').value=c.dataNegociacao||today(); $('#dataPrim').value=c.dataPrimeiroPagamento;
     form.freq.value=c.frequencia; $('#parcelas').value=c.parcelas;
-    $('#valor').value=String(c.valorBem||'').replace('.',','); $('#regra').value=c.regra||'auto'; $('#obs').value=c.obs||''; $('#entrada').value=c.entrada?num(c.entrada):'';
-    if(c.obs || c.entrada || (c.regra&&c.regra!=='auto')) $('#mais').open=true;
-    const vp=c.valorParcela||c.valorTotal/c.parcelas, autoTot=(c.valorBem||0)*multiplicador(c.parcelas,c.regra||'auto');
-    calcManual=(c.regra||'auto')!=='manual' && Math.abs(autoTot-c.valorTotal)>0.005;
+    const temItem = c.regra!=='manual' && c.valorBem>0;
+    $('#valor').value = temItem ? num(c.valorBem) : ''; $('#obs').value=c.obs||''; $('#entrada').value=c.entrada?num(c.entrada):'';
+    if(c.obs || c.entrada) $('#mais').open=true;
+    acAuto=false;
+    if(c.acrescimo){ form.acTipo.value=c.acrescimo.tipo; $('#acValor').value=c.acrescimo.valor?nx(c.acrescimo.valor):''; }
+    else if(temItem && c.multiplicador>1){ form.acTipo.value='x'; $('#acValor').value=nx(c.multiplicador); }
+    else { form.acTipo.value='0'; $('#acValor').value=''; }
+    const vp=c.valorParcela||c.valorTotal/c.parcelas;
+    calcManual = !temItem || Math.abs(c.valorBem*fatorAcrescimo()-vp*c.parcelas)>0.005; digitou='total';
     $('#formTitle').textContent='Editar: '+c.nome; $('#btnSalvar').textContent='Salvar alterações'; $('#btnCancelar').hidden=false;
-    atualizarCalc(); $('#cTotalIn').value=num(vp*c.parcelas); $('#cParcIn').value=num(vp);
+    $('#cTotalIn').value=num(vp*c.parcelas); $('#cParcIn').value=num(vp); atualizarCalc();
     go('nova');
   }
   form.addEventListener('submit',async e=>{
     e.preventDefault();
     if(!db){ toast('Sem conexão. Tente de novo em instantes.'); return; }
     const parcelas=Math.max(1,Math.min(120,parseInt($('#parcelas').value)||1));
-    const regra=$('#regra').value, mult=multiplicador(parcelas,regra);
+    const vItem=parseValor($('#valor').value);
+    const regra = vItem>0 ? 'auto' : 'manual';
     const valorTotal=Math.round(parseValor($('#cTotalIn').value)*100)/100;
+    const mult = vItem>0 ? Math.round(valorTotal/vItem*10000)/10000 : 1;
+    const acrescimo = { tipo:form.acTipo.value, valor: form.acTipo.value==='0' ? 0 : parseValor($('#acValor').value) };
     if(!$('#nome').value.trim()){ toast('Informe o nome.'); $('#nome').focus(); return; }
-    if(valorTotal<=0){ toast(regra==='manual'?'Informe o valor da parcela.':'Informe o valor do bem ou o total.'); $(regra==='manual'?'#cParcIn':'#valor').focus(); return; }
+    if(valorTotal<=0){ toast('Informe o valor do item ou o valor de cada parcela.'); $('#valor').focus(); return; }
     const valorParcela=valorTotal/parcelas;
-    const valorBem = regra==='manual' ? valorTotal : parseValor($('#valor').value);
+    const valorBem = vItem>0 ? vItem : valorTotal;
     const antigo = editId ? contas.find(c=>c.id===editId) : null;
     const corta=(arr,fill)=>{ const a=(arr||[]).slice(0,parcelas); while(a.length<parcelas) a.push(fill); return a; };
     const doc={
       tipo:tipoAtual(), nome:$('#nome').value.trim().replace(/\s+/g,' '), item:$('#item').value.trim(), telefone:$('#tel').value.replace(/\D/g,''),
       dataNegociacao:$('#dataNeg').value, dataPrimeiroPagamento:$('#dataPrim').value,
-      frequencia:form.freq.value, parcelas, valorBem, regra, multiplicador:mult, valorParcela, valorTotal, valorManual:calcManual,
+      frequencia:form.freq.value, parcelas, valorBem, regra, multiplicador:mult, acrescimo, valorParcela, valorTotal, valorManual:calcManual,
       pagas:corta(antigo&&antigo.pagas,false), valores:corta(antigo&&antigo.valores,null), datasCustom:corta(antigo&&antigo.datasCustom,null),
       obs:$('#obs').value.trim(), entrada:Math.round(parseValor($('#entrada').value)*100)/100, criadoEm: antigo ? antigo.criadoEm : new Date().toISOString(), atualizadoEm:new Date().toISOString()
     };
@@ -1292,7 +1328,7 @@ html[data-tema="marinho"][data-theme="dark"]{--bg:#070d17;--surface:#111a2a;--in
     $('#btnRegraOff').hidden=!regraCfg; $('#optAuto').disabled=!regraCfg;
     $('#optAuto').textContent=regraCfg?'Automática ('+textoRegra()+')':'Automática (defina sua regra em “Conta”)';
     if(!regraCfg && $('#regra').value==='auto') $('#regra').value='nenhuma';
-    if(view==='nova') atualizarCalc();
+    if(view==='nova'){ sugereAcrescimo(); atualizarCalc(); }
   }
   $('#btnRegra').addEventListener('click',()=>{
     const limite=parseInt($('#rgLimite').value), ate=parseValor($('#rgAte').value), acima=parseValor($('#rgAcima').value);

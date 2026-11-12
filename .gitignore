@@ -1,0 +1,6 @@
+# saídas dos testes (imagens, arquivos baixados) e cópias de dados reais
+testes/*.png
+testes/*.ics
+testes/*.csv
+testes/local-backup.json
+testes/backup-contas.json

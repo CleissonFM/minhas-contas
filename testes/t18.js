@@ -1,0 +1,30 @@
+const {chromium,devices}=require('playwright'); const fs=require('fs'), path=require('path');
+const ROOT=''+require('path').join(__dirname,'..')+'';
+(async()=>{
+ const b=await chromium.launch(); const ctx=await b.newContext({...devices['iPhone 13'],serviceWorkers:'block'});
+ await ctx.route('**/*',async r=>{ const u=r.request().url();
+  if(u.includes('gstatic.com/firebasejs')) return r.fulfill({contentType:'application/javascript',body:u.includes('app-compat')?fs.readFileSync(__dirname+'/mockfb.js','utf8'):''});
+  if(u.startsWith('https://app.local/')){ const f=u.replace('https://app.local/','').split('?')[0]||'index.html'; const fp=path.join(ROOT,f); return fs.existsSync(fp)?r.fulfill({contentType:f.endsWith('.js')?'application/javascript':'text/html',body:fs.readFileSync(fp)}):r.fulfill({status:404,body:''}); }
+  return r.fulfill({body:''}); });
+ const p=await ctx.newPage(); const errs=[]; p.on('pageerror',e=>errs.push(e.message));
+ await p.addInitScript(()=>{ if(!sessionStorage.getItem('x')){ window.__noUser=true; } });
+ await p.goto('https://app.local/index.html'); await p.waitForTimeout(500);
+ console.log('1) escolha visivel:',await p.locator('#passoEscolha').isVisible(),'| online escondido:',await p.locator('#passoOnline').isHidden(),'| novidades:',await p.locator('#novidades').isVisible());
+ await p.screenshot({path:__dirname+'/t18a.png'});
+ await p.click('#btnOnline'); await p.waitForTimeout(100);
+ console.log('2) link pedir acesso:',await p.getAttribute('#btnPedirAcesso','href'));
+ await p.screenshot({path:__dirname+'/t18b.png',fullPage:true});
+ await p.click('#btnVoltarEscolha'); await p.click('#btnLocal'); await p.waitForTimeout(300); await p.click('#instEntendi');
+ await p.click('nav.bar .add'); await p.fill('#nome','Cliente Offline'); await p.fill('#parcelas','3'); await p.fill('#cParcIn','100'); await p.dispatchEvent('#cParcIn','input'); await p.click('#btnSalvar'); await p.waitForTimeout(1500);
+ await p.click('#sync'); await p.waitForTimeout(100);
+ console.log('3) card local texto:',(await p.locator('#cardLocal').innerText()).replace(/\n+/g,' | ').slice(0,160));
+ await p.click('#btnJaTenhoAcesso'); await p.waitForTimeout(200);
+ console.log('4) foi pro login online:',await p.locator('#passoOnline').isVisible());
+ await p.fill('#lEmail','amigo@exemplo.com'); await p.fill('#lSenha','123456'); await p.click('#btnEntrar'); await p.waitForTimeout(800);
+ console.log('5) banner migrar:',await p.locator('#migrar').isVisible(),'|',await p.locator('#migrarTxt').innerText());
+ await p.click('#btnMigrar'); await p.waitForTimeout(1500);
+ const nuvem=await p.evaluate(()=>[...window.__store.keys()]);
+ console.log('6) na nuvem:',nuvem.filter(k=>k.includes('contas')).length,'contas |',await p.locator('.row').count(),'linhas');
+ console.log('erros:',errs);
+ await b.close();
+})();
