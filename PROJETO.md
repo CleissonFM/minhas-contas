@@ -6,8 +6,8 @@ App pessoal (PWA) para controlar quem me deve e o que eu devo.
 ## Arquivos
 - `index.html` — o app inteiro (HTML, CSS e JavaScript numa página só).
 - `firebase-config.js` — identificação do projeto Firebase (`minhas-contas-477f7`, não é senha) e o WhatsApp de contato para pedir acesso online (`CONTATO_WHATSAPP`).
-- `sw.js` — service worker: guarda o app no aparelho para abrir sem internet. **Ao publicar uma mudança, aumentar o número em `CACHE`** (ex.: `caderneta-v18` → `v19`).
-- `manifest.webmanifest`, ícones — instalação na Tela de Início.
+- `sw.js` — service worker: guarda o app no aparelho para abrir sem internet. **Ao publicar uma mudança, aumentar o número em `CACHE`** (ex.: `caderneta-v19` → `v20`).
+- `manifest.webmanifest`, `icon.svg` e ícones PNG — instalação na Tela de Início. Ícone oficial: **calendário branco e azul com R$** (`icon.svg`; PNGs gerados a partir dele, incluindo `icon-maskable-512.png` para Android).
 - `firestore.rules` — regras de segurança do Firestore (cada usuário só lê/grava `users/{uid}/...`).
 - `testes/` — testes automáticos com Playwright e um Firebase de mentira (`mockfb.js`). Rodar: `node testes/t21.js` etc. Usam `testes/dados-exemplo.json` (dados fictícios).
 
@@ -23,7 +23,7 @@ App pessoal (PWA) para controlar quem me deve e o que eu devo.
 - Cobrança por pessoa: recebido, sem resposta, ou promessa de pagamento com data; histórico e último contato pelo WhatsApp.
 
 ## Outras funções
-WhatsApp com mensagem pronta (lista e ficha), recibo, resumo do mês, lembretes no calendário (.ics), planilha (.csv), cópia de segurança/importação, senha de 4 números por conta, 5 paletas de cores (modo claro e escuro), aviso de novidades a cada versão (`VERSAO` no código).
+WhatsApp com mensagem pronta (lista e ficha), recibo, resumo do mês, lembretes no calendário (.ics), planilha (.csv), cópia de segurança/importação, senha de 4 números por conta, 6 paletas de cores (modo claro e escuro; **Azul** é o padrão para quem é novo, combinando com o ícone), aviso de novidades a cada versão (`VERSAO` no código).
 
 ## Histórico
 - Começou como artifact no Claude (dados antigos lá estão congelados, com aviso apontando para este site).

@@ -1,6 +1,6 @@
 // Guarda o app no aparelho para abrir mesmo sem internet.
-const CACHE='caderneta-v18';
-const APP=['./','index.html','firebase-config.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
+const CACHE='caderneta-v19';
+const APP=['./','index.html','firebase-config.js','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','icon.svg','favicon-32.png','apple-touch-icon.png'];
 const SDK=['app','auth','firestore'].map(n=>`https://www.gstatic.com/firebasejs/10.12.2/firebase-${n}-compat.js`);
 self.addEventListener('install',e=>{ e.waitUntil(caches.open(CACHE).then(c=>c.addAll([...APP,...SDK]).catch(()=>c.addAll(APP))).then(()=>self.skipWaiting())); });
 self.addEventListener('activate',e=>{ e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
